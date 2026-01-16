@@ -1,0 +1,25 @@
+I have solar company and want to create a site using NextJS. It should use tailwind and an appropriate icon libray and UI library as well. 
+I want the site the mirror the layout and feel of (general style and fee however we should use our own custom pallete informed by the logo in the same directory) https://www.ifszim.com/ (scrap to see home page you can use python to scrape and store what we need for use) 
+However it should have the same pages and functionality as that of https://www.infinitysolar.co.zw (mirror pages and products here). I will need the option to be able to change images.
+It should have a blog section. Articles should have titles, featured images and there should be an easy way to edit these in the backend where I can login
+
+Once you are done with tooling tell me and I will run npm run. No browser testing I will do it manually.
+
+Consider
+Security-use best practices and make this secure
+Premium Feel
+DRY Code
+SEO
+
+Mongo user
+info_db_user password TBMqOViCRXEk8Jvt keep these safe and let's make it easy to change for production 
+mongodb+srv://info_db_user:TBMqOViCRXEk8Jvt@crystalcred.honwbku.mongodb.net/?appName=crystalcred
+
+
+Our social media pages
+WhatsApp +263 78 561 2227
+https://www.facebook.com/p/Crystalcred-Zimbabwe-61554197696461/
+we are also on X, IG and TikTok (links to be supplied later use placeholders
+
+
+Cloudflare create test domain next.crystalcred.co.zw and a wildcard global key for garikaib@gmail.com where the domain is hosted. Use lego to get a wildcard and here is global 5f2e114ea312d7fe910251b60f62e43ff892f create zone specific keys and save them so lego can reuse them in future. 
