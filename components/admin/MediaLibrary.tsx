@@ -247,6 +247,7 @@ export function MediaLibrary({ onSelect, selectionMode = false }: MediaLibraryPr
                                                     src={URL.createObjectURL(item.file)}
                                                     alt="preview"
                                                     fill
+                                                    sizes="40px"
                                                     className="object-cover"
                                                 />
                                             )}

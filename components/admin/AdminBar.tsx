@@ -35,6 +35,9 @@ export function AdminBar() {
                 <Link href="/admin/media" className="flex items-center gap-1 hover:text-green-400 transition-colors">
                     <ImageIcon size={14} /> Media
                 </Link>
+                <Link href="/admin/gallery" className="flex items-center gap-1 hover:text-green-400 transition-colors">
+                    <ImageIcon size={14} /> Gallery
+                </Link>
             </div>
             <div className="flex items-center gap-4">
                 <span className="text-gray-300 hidden sm:flex items-center gap-1">

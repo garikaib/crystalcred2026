@@ -61,7 +61,7 @@ export function Testimonials() {
 
                 <Carousel className="w-full max-w-4xl mx-auto">
                     <CarouselContent>
-                        {testimonials.map((t) => (
+                        {testimonials.map((t, index) => (
                             <CarouselItem key={t._id} className="md:basis-1/2 lg:basis-1/2 pl-4">
                                 <div className="p-1">
                                     <Card className="h-full border-none shadow-sm hover:shadow-md bg-secondary/20">
@@ -77,7 +77,14 @@ export function Testimonials() {
                                             <div className="mt-auto pt-4 flex items-center gap-3">
                                                 {t.image && (
                                                     <div className="relative h-10 w-10 rounded-full overflow-hidden">
-                                                        <Image src={t.image} alt={t.name} fill className="object-cover" />
+                                                        <Image
+                                                            src={t.image}
+                                                            alt={t.name}
+                                                            fill
+                                                            sizes="40px"
+                                                            className="object-cover"
+                                                            priority={index < 2}
+                                                        />
                                                     </div>
                                                 )}
                                                 <div>

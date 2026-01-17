@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -9,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose, DialogDescription } from "@/components/ui/dialog"
 import { MediaManager } from "@/components/admin/MediaManager"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -224,6 +223,9 @@ export default function AdminProductsPage() {
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{editingProduct?._id ? "Edit Product" : "Add New Product"}</DialogTitle>
+                        <DialogDescription>
+                            {editingProduct?._id ? "Make changes to the product details below." : "Enter the details for the new product."}
+                        </DialogDescription>
                     </DialogHeader>
 
                     {editingProduct && (
@@ -360,6 +362,10 @@ export default function AdminProductsPage() {
 
             <Dialog open={showMediaManager} onOpenChange={setShowMediaManager}>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Media Library</DialogTitle>
+                        <DialogDescription>Select an image from the media library.</DialogDescription>
+                    </DialogHeader>
                     <MediaManager
                         onSelect={(item: any) => {
                             if (editingProduct) {

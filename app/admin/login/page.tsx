@@ -1,84 +1,217 @@
-import { signIn } from "@/lib/auth"
+"use client"
+
+import { useState, useEffect, useRef } from "react"
+import { signIn } from "next-auth/react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Zap, Shield, ArrowRight } from "lucide-react"
-import Image from "next/image"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Zap, Shield, ArrowRight, Loader2, AlertCircle } from "lucide-react"
+import Script from "next/script"
 
 export default function LoginPage() {
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const [username, setUsername] = useState("")
+    const [password, setPassword] = useState("")
+    const [turnstileToken, setTurnstileToken] = useState("")
+    const [error, setError] = useState("")
+    const [isLoading, setIsLoading] = useState(false)
+    const turnstileRef = useRef<HTMLDivElement>(null)
+
+    const errorFromUrl = searchParams.get("error")
+
+    useEffect(() => {
+        if (errorFromUrl) {
+            if (errorFromUrl === "CredentialsSignin") {
+                setError("Invalid username or password")
+            } else {
+                setError(errorFromUrl)
+            }
+        }
+    }, [errorFromUrl])
+
+    // Turnstile callback
+    useEffect(() => {
+        (window as any).onTurnstileSuccess = (token: string) => {
+            setTurnstileToken(token)
+        };
+        (window as any).onTurnstileExpired = () => {
+            setTurnstileToken("")
+        };
+        (window as any).onTurnstileError = () => {
+            setError("Security verification failed. Please refresh.")
+        }
+    }, [])
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault()
+        setError("")
+        setIsLoading(true)
+
+        if (!turnstileToken) {
+            setError("Please complete the security verification")
+            setIsLoading(false)
+            return
+        }
+
+        try {
+            const result = await signIn("credentials", {
+                username,
+                password,
+                turnstileToken,
+                redirect: false,
+            })
+
+            if (result?.error) {
+                setError(result.error === "CredentialsSignin" ? "Invalid username or password" : result.error)
+                // Reset Turnstile
+                if ((window as any).turnstile) {
+                    (window as any).turnstile.reset()
+                }
+                setTurnstileToken("")
+            } else if (result?.ok) {
+                router.push("/admin")
+                router.refresh()
+            }
+        } catch (err) {
+            setError("An unexpected error occurred")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return (
-        <div className="min-h-screen flex">
-            {/* Left Panel - Branding */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-crystal-dark to-crystal-navy flex-col justify-between p-12 text-white">
-                <div>
-                    <h1 className="text-4xl font-bold mb-2">CrystalCred</h1>
-                    <p className="text-crystal-light/70">Admin Portal</p>
-                </div>
-
-                <div className="space-y-8">
-                    <div className="flex items-start gap-4">
-                        <div className="p-3 bg-white/10 rounded-lg">
-                            <Zap className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-lg">Manage Your Content</h3>
-                            <p className="text-crystal-light/70 text-sm">Create and publish blog posts with ease using our rich text editor.</p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-4">
-                        <div className="p-3 bg-white/10 rounded-lg">
-                            <Shield className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-lg">Secure Access</h3>
-                            <p className="text-crystal-light/70 text-sm">Protected with Google Sign-In and admin-only authorization.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <p className="text-sm text-crystal-light/50">
-                    © {new Date().getFullYear()} CrystalCred. All rights reserved.
-                </p>
-            </div>
-
-            {/* Right Panel - Login Form */}
-            <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 bg-gray-50">
-                <div className="w-full max-w-md space-y-8">
-                    <div className="text-center lg:hidden mb-8">
-                        <h1 className="text-3xl font-bold text-crystal-navy">CrystalCred</h1>
-                        <p className="text-gray-500">Admin Portal</p>
+        <>
+            <Script
+                src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+                async
+                defer
+            />
+            <div className="min-h-screen flex">
+                {/* Left Panel - Branding */}
+                <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 to-slate-800 flex-col justify-between p-12 text-white">
+                    <div>
+                        <h1 className="text-4xl font-bold mb-2">CrystalCred</h1>
+                        <p className="text-slate-400">Admin Portal</p>
                     </div>
 
-                    <div className="bg-white p-8 rounded-xl shadow-lg border">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-                        <p className="text-gray-500 mb-8">Sign in to access the admin dashboard</p>
-
-                        <form
-                            action={async () => {
-                                "use server"
-                                await signIn("google", { redirectTo: "/admin" })
-                            }}
-                        >
-                            <Button type="submit" className="w-full h-12 text-base" size="lg">
-                                <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                                </svg>
-                                Continue with Google
-                                <ArrowRight className="ml-auto h-5 w-5" />
-                            </Button>
-                        </form>
-
-                        <p className="text-xs text-center text-gray-400 mt-6">
-                            Only authorized administrators can access this portal.
-                        </p>
+                    <div className="space-y-8">
+                        <div className="flex items-start gap-4">
+                            <div className="p-3 bg-white/10 rounded-lg">
+                                <Zap className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg">Manage Your Content</h3>
+                                <p className="text-slate-400 text-sm">Create and publish blog posts, manage products, and update your gallery.</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-4">
+                            <div className="p-3 bg-white/10 rounded-lg">
+                                <Shield className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg">Secure Access</h3>
+                                <p className="text-slate-400 text-sm">Protected with secure credentials and bot protection.</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <p className="text-center text-sm text-gray-500">
-                        Not an admin? <a href="/" className="text-primary hover:underline">Return to website</a>
+                    <p className="text-sm text-slate-500">
+                        © {new Date().getFullYear()} CrystalCred. All rights reserved.
                     </p>
                 </div>
+
+                {/* Right Panel - Login Form */}
+                <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 bg-gray-50">
+                    <div className="w-full max-w-md space-y-8">
+                        <div className="text-center lg:hidden mb-8">
+                            <h1 className="text-3xl font-bold text-slate-900">CrystalCred</h1>
+                            <p className="text-gray-500">Admin Portal</p>
+                        </div>
+
+                        <div className="bg-white p-8 rounded-xl shadow-lg border">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+                            <p className="text-gray-500 mb-8">Sign in to access the admin dashboard</p>
+
+                            {error && (
+                                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3 text-red-700">
+                                    <AlertCircle size={20} />
+                                    <span className="text-sm">{error}</span>
+                                </div>
+                            )}
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="username">Username or Email</Label>
+                                    <Input
+                                        id="username"
+                                        type="text"
+                                        placeholder="Enter your username"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        required
+                                        disabled={isLoading}
+                                        className="h-12"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="password">Password</Label>
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        placeholder="Enter your password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        disabled={isLoading}
+                                        className="h-12"
+                                    />
+                                </div>
+
+                                {/* Turnstile Widget */}
+                                <div
+                                    ref={turnstileRef}
+                                    className="cf-turnstile"
+                                    data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAACM4BbF045-Zf1Cw"}
+                                    data-callback="onTurnstileSuccess"
+                                    data-expired-callback="onTurnstileExpired"
+                                    data-error-callback="onTurnstileError"
+                                    data-theme="light"
+                                />
+
+                                <Button
+                                    type="submit"
+                                    className="w-full h-12 text-base"
+                                    size="lg"
+                                    disabled={isLoading || !turnstileToken}
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                            Signing in...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Sign In
+                                            <ArrowRight className="ml-auto h-5 w-5" />
+                                        </>
+                                    )}
+                                </Button>
+                            </form>
+
+                            <p className="text-xs text-center text-gray-400 mt-6">
+                                Only authorized administrators can access this portal.
+                            </p>
+                        </div>
+
+                        <p className="text-center text-sm text-gray-500">
+                            Not an admin? <a href="/" className="text-primary hover:underline">Return to website</a>
+                        </p>
+                    </div>
+                </div>
             </div>
-        </div>
+        </>
     )
 }
