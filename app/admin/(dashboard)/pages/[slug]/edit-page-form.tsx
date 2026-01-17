@@ -18,9 +18,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Image as ImageIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MediaManager } from "@/components/admin/MediaManager";
+import Image from "next/image";
 
 // --- Page Specific Schemas & Components ---
 
@@ -74,6 +76,8 @@ const aboutPageSchema = z.object({
 type AboutFormValues = z.infer<typeof aboutPageSchema>;
 
 function AboutPageEditor({ initialData, onSubmit, saving }: { initialData: any, onSubmit: (data: AboutFormValues) => void, saving: boolean }) {
+    const [mediaManagerOpen, setMediaManagerOpen] = useState(false);
+
     const form = useForm<AboutFormValues>({
         resolver: zodResolver(aboutPageSchema),
         defaultValues: {
@@ -170,9 +174,59 @@ function AboutPageEditor({ initialData, onSubmit, saving }: { initialData: any, 
                                     name="sections.story.image"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Image Path</FormLabel>
-                                            <FormControl><Input {...field} /></FormControl>
-                                            <FormDescription>Path to image in /public/uploads</FormDescription>
+                                            <FormLabel>Featured Image</FormLabel>
+                                            <FormControl>
+                                                <div className="space-y-3">
+                                                    {field.value ? (
+                                                        <div className="relative aspect-video w-full max-w-md bg-gray-100 rounded-lg overflow-hidden border">
+                                                            <Image
+                                                                src={field.value}
+                                                                alt="Story Image"
+                                                                fill
+                                                                className="object-cover"
+                                                            />
+                                                            <Button
+                                                                type="button"
+                                                                variant="destructive"
+                                                                size="icon"
+                                                                className="absolute top-2 right-2 h-6 w-6"
+                                                                onClick={() => field.onChange("")}
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg bg-gray-50 text-muted-foreground w-full max-w-md">
+                                                            <ImageIcon className="h-8 w-8 mb-2 opacity-50" />
+                                                            <p className="text-xs">No image selected</p>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex items-center gap-2">
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            onClick={() => setMediaManagerOpen(true)}
+                                                        >
+                                                            Select Image
+                                                        </Button>
+                                                        <Input
+                                                            {...field}
+                                                            placeholder="Or paste URL..."
+                                                            className="flex-1 max-w-md font-mono text-xs"
+                                                        />
+                                                    </div>
+
+                                                    <MediaManager
+                                                        open={mediaManagerOpen}
+                                                        onOpenChange={setMediaManagerOpen}
+                                                        onSelect={(item) => {
+                                                            field.onChange(item.url);
+                                                        }}
+                                                    />
+                                                </div>
+                                            </FormControl>
+                                            <FormDescription>Select from library or paste a URL.</FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
