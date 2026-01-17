@@ -1,15 +1,10 @@
-import Link from "next/link"
-import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { AdminSidebar } from "@/components/admin/AdminSidebar"
 import { AdminHeader } from "@/components/admin/AdminHeader"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+    // Session is guaranteed by middleware, but we still fetch it for user data
     const session = await auth()
-
-    if (!session || session.user?.role !== "admin") {
-        redirect("/admin/login")
-    }
 
     return (
         <div className="flex min-h-screen bg-gray-50/50">
