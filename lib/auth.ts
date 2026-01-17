@@ -38,8 +38,45 @@ export const authConfig: NextAuthConfig = {
                 username: { label: "Username", type: "text" },
                 password: { label: "Password", type: "password" },
                 turnstileToken: { label: "Turnstile Token", type: "text" },
+                magicToken: { label: "Magic Token", type: "text" },
+                email: { label: "Email", type: "email" },
             },
             async authorize(credentials) {
+                // Connect to database
+                await dbConnect()
+
+                // 1. Magic Link Logic
+                const magicToken = credentials.magicToken as string
+                const magicEmail = credentials.email as string
+
+                if (magicToken && magicEmail) {
+                    const crypto = require("crypto")
+                    const magicTokenHash = crypto.createHash("sha256").update(magicToken).digest("hex")
+
+                    const user = await User.findOne({
+                        email: magicEmail.toLowerCase(),
+                        magicLinkToken: magicTokenHash,
+                        magicLinkExpiry: { $gt: Date.now() },
+                    }).select("+magicLinkToken +magicLinkExpiry")
+
+                    if (!user) {
+                        throw new Error("Invalid or expired magic link")
+                    }
+
+                    // Clear utilized token
+                    user.magicLinkToken = undefined
+                    user.magicLinkExpiry = undefined
+                    await user.save()
+
+                    return {
+                        id: user._id.toString(),
+                        name: user.username,
+                        email: user.email,
+                        role: user.role,
+                    }
+                }
+
+                // 2. Standard Username/Password Logic
                 if (!credentials?.username || !credentials?.password) {
                     throw new Error("Please provide username and password")
                 }
@@ -54,9 +91,6 @@ export const authConfig: NextAuthConfig = {
                 if (!isTurnstileValid) {
                     throw new Error("Security verification failed")
                 }
-
-                // Connect to database
-                await dbConnect()
 
                 // Find user by username or email
                 const username = (credentials.username as string).toLowerCase().trim()

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import nodemailer from "nodemailer"
+import { contactAdminEmail, userConfirmationEmail } from "@/lib/email-templates"
 
 const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
 
@@ -76,8 +77,8 @@ export async function POST(request: NextRequest) {
 
         // Send Admin Notification
         await transporter.sendMail({
-            from: process.env.SMTP_FROM || '"CrystalCred Website" <info@crystalcred.co.zw>',
-            to: process.env.ADMIN_EMAILS || "info@crystalcred.co.zw", // Fallback or configurable admin email
+            from: process.env.SMTP_FROM || '"Crystal Cred Website" <info@crystalcred.co.zw>',
+            to: "innocent@crystalcred.co.zw",
             subject: `New Contact Form Submission from ${body.name}`,
             text: `
 Name: ${body.name}
@@ -86,30 +87,22 @@ Phone: ${body.phone}
 Message:
 ${body.message}
             `,
-            html: `
-<h3>New Contact Form Submission</h3>
-<p><strong>Name:</strong> ${body.name}</p>
-<p><strong>Email:</strong> ${body.email}</p>
-<p><strong>Phone:</strong> ${body.phone}</p>
-<p><strong>Message:</strong></p>
-<p>${body.message.replace(/\n/g, "<br>")}</p>
-            `,
+            html: contactAdminEmail({
+                name: body.name,
+                email: body.email,
+                phone: body.phone,
+                message: body.message
+            }),
         })
 
         // Optionally send user confirmation
         try {
             await transporter.sendMail({
-                from: process.env.SMTP_FROM || '"CrystalCred" <info@crystalcred.co.zw>',
+                from: process.env.SMTP_FROM || '"Crystal Cred Website" <info@crystalcred.co.zw>',
                 to: body.email,
                 subject: "We received your message - CrystalCred",
                 text: `Hi ${body.name},\n\nThank you for reaching out to CrystalCred. We have received your message and will get back to you shortly.\n\nBest regards,\nThe CrystalCred Team`,
-                html: `
-<p>Hi ${body.name},</p>
-<p>Thank you for reaching out to <strong>CrystalCred</strong>. We have received your message and will get back to you shortly.</p>
-<br>
-<p>Best regards,</p>
-<p>The CrystalCred Team</p>
-                `,
+                html: userConfirmationEmail(body.name),
             })
         } catch (emailError) {
             console.error("Failed to send user confirmation email:", emailError)

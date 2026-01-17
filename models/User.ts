@@ -6,6 +6,10 @@ export interface IUser extends Document {
     email: string
     password: string
     role: "admin" | "user"
+    resetToken?: string
+    resetTokenExpiry?: Date
+    magicLinkToken?: string
+    magicLinkExpiry?: Date
     createdAt: Date
     updatedAt: Date
     comparePassword(candidatePassword: string): Promise<boolean>
@@ -36,6 +40,22 @@ const UserSchema = new Schema<IUser>(
             type: String,
             enum: ["admin", "user"],
             default: "user",
+        },
+        resetToken: {
+            type: String,
+            select: false,
+        },
+        resetTokenExpiry: {
+            type: Date,
+            select: false,
+        },
+        magicLinkToken: {
+            type: String,
+            select: false,
+        },
+        magicLinkExpiry: {
+            type: Date,
+            select: false,
         },
     },
     { timestamps: true }

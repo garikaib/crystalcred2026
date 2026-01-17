@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Zap, Shield, ArrowRight, Loader2, AlertCircle } from "lucide-react"
+import { Zap, Shield, ArrowRight, Loader2, AlertCircle, Mail, CheckCircle } from "lucide-react"
 import Script from "next/script"
 
 export default function LoginPage() {
@@ -14,6 +15,9 @@ export default function LoginPage() {
     const searchParams = useSearchParams()
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
+    const [magicEmail, setMagicEmail] = useState("")
+    const [isMagicLink, setIsMagicLink] = useState(false)
+    const [magicLinkSent, setMagicLinkSent] = useState(false)
     const [turnstileToken, setTurnstileToken] = useState("")
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
@@ -45,6 +49,34 @@ export default function LoginPage() {
             setError("Security verification failed. Please refresh.")
         }
     }, [])
+
+    async function handleMagicLinkSubmit(e: React.FormEvent) {
+        e.preventDefault()
+        setError("")
+        setIsLoading(true)
+
+        if (!turnstileToken) {
+            setError("Please complete the security verification")
+            setIsLoading(false)
+            return
+        }
+
+        try {
+            const res = await fetch("/api/auth/magic-link", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: magicEmail }),
+            })
+
+            if (!res.ok) throw new Error("Failed to send magic link")
+
+            setMagicLinkSent(true)
+        } catch (err) {
+            setError("Failed to send magic link. Please try again.")
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -143,64 +175,143 @@ export default function LoginPage() {
                                 </div>
                             )}
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="username">Username or Email</Label>
-                                    <Input
-                                        id="username"
-                                        type="text"
-                                        placeholder="Enter your username"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        required
-                                        disabled={isLoading}
-                                        className="h-12"
-                                    />
-                                </div>
+                            <form onSubmit={isMagicLink ? handleMagicLinkSubmit : handleSubmit} className="space-y-6">
+                                {magicLinkSent ? (
+                                    <div className="text-center space-y-4 animate-in fade-in-50">
+                                        <div className="flex justify-center">
+                                            <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center">
+                                                <CheckCircle className="h-8 w-8 text-green-600" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h3 className="text-lg font-medium">Check your email</h3>
+                                            <p className="text-sm text-gray-500">
+                                                We've sent a magic link to <strong>{magicEmail}</strong>.
+                                            </p>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full"
+                                            onClick={() => {
+                                                setMagicLinkSent(false)
+                                                setIsMagicLink(false)
+                                            }}
+                                        >
+                                            Back to Login
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {isMagicLink ? (
+                                            <div className="space-y-2">
+                                                <Label htmlFor="magicEmail">Email Address</Label>
+                                                <div className="relative">
+                                                    <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                                                    <Input
+                                                        id="magicEmail"
+                                                        type="email"
+                                                        placeholder="name@example.com"
+                                                        className="pl-10 h-12"
+                                                        value={magicEmail}
+                                                        onChange={(e) => setMagicEmail(e.target.value)}
+                                                        required
+                                                        disabled={isLoading}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="username">Username or Email</Label>
+                                                    <Input
+                                                        id="username"
+                                                        type="text"
+                                                        placeholder="Enter your username"
+                                                        value={username}
+                                                        onChange={(e) => setUsername(e.target.value)}
+                                                        required
+                                                        disabled={isLoading}
+                                                        className="h-12"
+                                                    />
+                                                </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">Password</Label>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        placeholder="Enter your password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                        disabled={isLoading}
-                                        className="h-12"
-                                    />
-                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <Label htmlFor="password">Password</Label>
+                                                        <Link
+                                                            href="/admin/forgot-password"
+                                                            className="text-sm text-primary hover:underline text-[#0d9488]"
+                                                        >
+                                                            Forgot password?
+                                                        </Link>
+                                                    </div>
+                                                    <Input
+                                                        id="password"
+                                                        type="password"
+                                                        placeholder="Enter your password"
+                                                        value={password}
+                                                        onChange={(e) => setPassword(e.target.value)}
+                                                        required
+                                                        disabled={isLoading}
+                                                        className="h-12"
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
 
-                                {/* Turnstile Widget */}
-                                <div
-                                    ref={turnstileRef}
-                                    className="cf-turnstile"
-                                    data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAACM4BbF045-Zf1Cw"}
-                                    data-callback="onTurnstileSuccess"
-                                    data-expired-callback="onTurnstileExpired"
-                                    data-error-callback="onTurnstileError"
-                                    data-theme="light"
-                                />
+                                        {/* Turnstile Widget */}
+                                        <div
+                                            ref={turnstileRef}
+                                            className="cf-turnstile"
+                                            data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAACM4BbF045-Zf1Cw"}
+                                            data-callback="onTurnstileSuccess"
+                                            data-expired-callback="onTurnstileExpired"
+                                            data-error-callback="onTurnstileError"
+                                            data-theme="light"
+                                        />
 
-                                <Button
-                                    type="submit"
-                                    className="w-full h-12 text-base"
-                                    size="lg"
-                                    disabled={isLoading || !turnstileToken}
-                                >
-                                    {isLoading ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                            Signing in...
-                                        </>
-                                    ) : (
-                                        <>
-                                            Sign In
-                                            <ArrowRight className="ml-auto h-5 w-5" />
-                                        </>
-                                    )}
-                                </Button>
+                                        <Button
+                                            type="submit"
+                                            className="w-full h-12 text-base bg-[#0d9488] hover:bg-[#0f766e]"
+                                            size="lg"
+                                            disabled={isLoading || !turnstileToken}
+                                        >
+                                            {isLoading ? (
+                                                <>
+                                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                                    {isMagicLink ? "Sending..." : "Signing in..."}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {isMagicLink ? "Send Magic Link" : "Sign In"}
+                                                    <ArrowRight className="ml-auto h-5 w-5" />
+                                                </>
+                                            )}
+                                        </Button>
+
+                                        <div className="relative">
+                                            <div className="absolute inset-0 flex items-center">
+                                                <span className="w-full border-t" />
+                                            </div>
+                                            <div className="relative flex justify-center text-xs uppercase">
+                                                <span className="bg-white px-2 text-muted-foreground text-gray-400">
+                                                    Or continue with
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full h-12"
+                                            onClick={() => setIsMagicLink(!isMagicLink)}
+                                            disabled={isLoading}
+                                        >
+                                            {isMagicLink ? "Sign in with Password" : "Sign in with Magic Link"}
+                                        </Button>
+                                    </>
+                                )}
                             </form>
 
                             <p className="text-xs text-center text-gray-400 mt-6">

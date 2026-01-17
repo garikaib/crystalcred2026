@@ -43,3 +43,6 @@ next-env.d.ts
 # secrets
 client_secret*.json
 resources/client_secret*.json
+
+# Sentry Config File
+.env.sentry-build-plugin
