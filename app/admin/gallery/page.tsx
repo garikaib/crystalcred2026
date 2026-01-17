@@ -145,6 +145,7 @@ export default function AdminGalleryPage() {
                                                 src={currentItem.image}
                                                 alt="Preview"
                                                 fill
+                                                sizes="128px"
                                                 className="object-cover"
                                             />
                                         </div>
@@ -192,14 +193,16 @@ export default function AdminGalleryPage() {
                 <div>Loading...</div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {items.map((item) => (
+                    {items.map((item, index) => (
                         <div key={item._id} className="group relative bg-white rounded-lg border overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                             <div className="relative h-48 w-full">
                                 <Image
                                     src={item.image}
                                     alt={item.title}
                                     fill
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     className="object-cover"
+                                    priority={index < 4}
                                 />
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <Button
