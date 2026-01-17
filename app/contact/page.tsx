@@ -1,7 +1,56 @@
+"use client";
+
 import { ContactForm } from "@/components/contact/ContactForm"
-import { MapPin, Phone, Mail, Instagram, Facebook, Twitter, Clock, MessageSquare } from "lucide-react"
+import { MapPin, Phone, Mail, Instagram, Facebook, Twitter, Clock, MessageSquare, Linkedin, Youtube, Loader2 } from "lucide-react"
+import { useEffect, useState } from "react"
+
+interface Socials {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    linkedin?: string;
+    youtube?: string;
+    tiktok?: string;
+}
+
+interface Contact {
+    address: string;
+    phone: string;
+    email: string;
+    whatsapp: string;
+}
+
+interface SiteSettings {
+    contact: Contact;
+    socials: Socials;
+}
 
 export default function ContactPage() {
+    const [settings, setSettings] = useState<SiteSettings | null>(null);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch("/api/settings");
+                if (res.ok) {
+                    const data = await res.json();
+                    setSettings(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch site settings:", error);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    if (!settings) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
     return (
         <div className="flex flex-col min-h-screen">
             {/* Hero Section */}
@@ -42,10 +91,8 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg mb-2 text-foreground">Visit Our Office</h3>
-                                        <p className="text-muted-foreground leading-relaxed">
-                                            4th Floor Three Anchor House Building,<br />
-                                            54 Jason Moyo,<br />
-                                            Harare, Zimbabwe
+                                        <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                                            {settings.contact.address}
                                         </p>
                                     </div>
                                 </div>
@@ -57,7 +104,7 @@ export default function ContactPage() {
                                     <div>
                                         <h3 className="font-bold text-lg mb-2 text-foreground">Call Us</h3>
                                         <p className="text-muted-foreground mb-1">
-                                            <a href="tel:+263785612227" className="hover:text-primary transition-colors">+263 78 561 2227</a>
+                                            <a href={`tel:${settings.contact.phone.replace(/\s+/g, '')}`} className="hover:text-primary transition-colors">{settings.contact.phone}</a>
                                         </p>
                                         <div className="flex items-center gap-2 text-sm text-muted-foreground bg-gray-50 px-3 py-1 rounded-full w-fit mt-2">
                                             <Clock size={14} />
@@ -73,7 +120,7 @@ export default function ContactPage() {
                                     <div>
                                         <h3 className="font-bold text-lg mb-2 text-foreground">Email Us</h3>
                                         <p className="text-muted-foreground">
-                                            <a href="mailto:info@crystalcred.co.zw" className="hover:text-primary transition-colors">info@crystalcred.co.zw</a>
+                                            <a href={`mailto:${settings.contact.email}`} className="hover:text-primary transition-colors">{settings.contact.email}</a>
                                         </p>
                                         <p className="text-sm text-muted-foreground mt-1">We typically reply within 24 hours</p>
                                     </div>
@@ -82,26 +129,57 @@ export default function ContactPage() {
 
                             <div className="mt-12">
                                 <h3 className="font-bold text-lg mb-4 text-foreground">Follow Our Journey</h3>
-                                <div className="flex gap-4">
-                                    <a
-                                        href="https://www.facebook.com/p/Crystalcred-Zimbabwe-61554197696461/"
-                                        target="_blank"
-                                        className="p-4 bg-white border border-gray-200 rounded-full text-gray-500 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1"
-                                    >
-                                        <Facebook size={20} />
-                                    </a>
-                                    <a
-                                        href="#"
-                                        className="p-4 bg-white border border-gray-200 rounded-full text-gray-500 hover:bg-pink-600 hover:text-white hover:border-pink-600 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1"
-                                    >
-                                        <Instagram size={20} />
-                                    </a>
-                                    <a
-                                        href="#"
-                                        className="p-4 bg-white border border-gray-200 rounded-full text-gray-500 hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1"
-                                    >
-                                        <Twitter size={20} />
-                                    </a>
+                                <div className="flex gap-4 flex-wrap">
+                                    {settings.socials.facebook && (
+                                        <a
+                                            href={settings.socials.facebook}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-4 bg-white border border-gray-200 rounded-full text-gray-500 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1"
+                                        >
+                                            <Facebook size={20} />
+                                        </a>
+                                    )}
+                                    {settings.socials.instagram && (
+                                        <a
+                                            href={settings.socials.instagram}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-4 bg-white border border-gray-200 rounded-full text-gray-500 hover:bg-pink-600 hover:text-white hover:border-pink-600 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1"
+                                        >
+                                            <Instagram size={20} />
+                                        </a>
+                                    )}
+                                    {settings.socials.twitter && (
+                                        <a
+                                            href={settings.socials.twitter}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-4 bg-white border border-gray-200 rounded-full text-gray-500 hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1"
+                                        >
+                                            <Twitter size={20} />
+                                        </a>
+                                    )}
+                                    {settings.socials.linkedin && (
+                                        <a
+                                            href={settings.socials.linkedin}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-4 bg-white border border-gray-200 rounded-full text-gray-500 hover:bg-blue-700 hover:text-white hover:border-blue-700 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1"
+                                        >
+                                            <Linkedin size={20} />
+                                        </a>
+                                    )}
+                                    {settings.socials.youtube && (
+                                        <a
+                                            href={settings.socials.youtube}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-4 bg-white border border-gray-200 rounded-full text-gray-500 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all shadow-sm hover:shadow-lg hover:-translate-y-1"
+                                        >
+                                            <Youtube size={20} />
+                                        </a>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -136,10 +214,11 @@ export default function ContactPage() {
                         <span className="font-bold text-foreground">Head Office</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                        Three Anchor House, Harare
+                        {settings.contact.address.split(',')[0]}
                     </p>
                 </div>
             </section>
         </div>
     )
 }
+

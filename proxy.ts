@@ -39,6 +39,7 @@ export function proxy(request: NextRequest) {
             "img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://*.googleusercontent.com",
             "connect-src 'self' https://challenges.cloudflare.com",
             "frame-src https://challenges.cloudflare.com",
+            "worker-src 'self' blob:",
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",

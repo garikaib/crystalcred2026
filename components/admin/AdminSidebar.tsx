@@ -123,11 +123,49 @@ export function AdminSidebar() {
                     </h3>
                     <div className="space-y-1">
                         <Link
-                            href="#"
-                            className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all duration-200 group"
+                            href="/admin/settings/contact"
+                            className={cn(
+                                "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group",
+                                pathname === "/admin/settings/contact"
+                                    ? "bg-teal-600/10 text-teal-400 border border-teal-600/20"
+                                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                            )}
                         >
-                            <Settings size={18} className="text-slate-500 group-hover:text-white" />
-                            Settings
+                            <Settings size={18} className={cn(
+                                "transition-colors",
+                                pathname === "/admin/settings/contact" ? "text-teal-400" : "text-slate-500 group-hover:text-white"
+                            )} />
+                            Contact Info
+                        </Link>
+                        <Link
+                            href="/admin/settings/socials"
+                            className={cn(
+                                "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group",
+                                pathname === "/admin/settings/socials"
+                                    ? "bg-teal-600/10 text-teal-400 border border-teal-600/20"
+                                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                            )}
+                        >
+                            <Settings size={18} className={cn(
+                                "transition-colors",
+                                pathname === "/admin/settings/socials" ? "text-teal-400" : "text-slate-500 group-hover:text-white"
+                            )} />
+                            Social Media
+                        </Link>
+                        <Link
+                            href="/admin/settings/security"
+                            className={cn(
+                                "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group",
+                                pathname === "/admin/settings/security"
+                                    ? "bg-teal-600/10 text-teal-400 border border-teal-600/20"
+                                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                            )}
+                        >
+                            <Settings size={18} className={cn(
+                                "transition-colors",
+                                pathname === "/admin/settings/security" ? "text-teal-400" : "text-slate-500 group-hover:text-white"
+                            )} />
+                            Security
                         </Link>
                     </div>
                 </div>

@@ -3,11 +3,59 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { FileQuestion, MoveLeft, Home } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { FileQuestion, MoveLeft, Home, AlertTriangle } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 
 export default function NotFound() {
     const router = useRouter();
+    const pathname = usePathname();
+    const { data: session } = useSession();
+
+    // Check if we are in admin routes and logged in as admin
+    const isAdminRoute = pathname?.startsWith("/admin");
+    const isAdminUser = session?.user?.role === "admin";
+    const showAdmin404 = isAdminRoute && isAdminUser;
+
+    if (showAdmin404) {
+        return (
+            <div className="flex min-h-screen bg-gray-50/50">
+                <AdminSidebar />
+                <div className="flex-1 flex flex-col min-w-0">
+                    <AdminHeader />
+                    <main className="flex-1 p-6 md:p-8 overflow-y-auto flex items-center justify-center">
+                        <div className="max-w-md w-full text-center space-y-6">
+                            <div className="flex justify-center">
+                                <div className="h-24 w-24 rounded-full bg-red-50 flex items-center justify-center">
+                                    <AlertTriangle className="h-12 w-12 text-red-500" />
+                                </div>
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900">Page Not Found</h1>
+                                <p className="mt-2 text-gray-500">
+                                    The admin resource you are looking for does not exist or has been moved.
+                                </p>
+                            </div>
+                            <div className="flex justify-center gap-4">
+                                <Button onClick={() => router.back()} variant="outline">
+                                    Go Back
+                                </Button>
+                                <Button asChild>
+                                    <Link href="/admin">
+                                        Back to Dashboard
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        );
+    }
+
+    // Default Public 404
     return (
         <div className="min-h-screen flex items-center justify-center bg-muted/30 relative overflow-hidden">
             {/* Background Decorative Elements */}

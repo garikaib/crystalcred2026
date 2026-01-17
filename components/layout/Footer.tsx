@@ -1,7 +1,50 @@
-import Link from "next/link"
-import { Facebook, Twitter, Instagram, Linkedin, MessageCircle, Mail, MapPin, Phone } from "lucide-react"
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Facebook, Twitter, Instagram, Linkedin, Youtube, MessageCircle, Mail, MapPin, Phone } from "lucide-react";
+
+interface Socials {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    linkedin?: string;
+    youtube?: string;
+    tiktok?: string;
+}
+
+interface Contact {
+    address: string;
+    phone: string;
+    email: string;
+    whatsapp: string;
+}
+
+interface SiteSettings {
+    contact: Contact;
+    socials: Socials;
+}
 
 export function Footer() {
+    const [settings, setSettings] = useState<SiteSettings | null>(null);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch("/api/settings");
+                if (res.ok) {
+                    const data = await res.json();
+                    setSettings(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch site settings:", error);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    const currentYear = new Date().getFullYear();
+
     return (
         <footer className="bg-primary text-white pt-16 pb-8">
             <div className="container mx-auto px-4">
@@ -13,12 +56,31 @@ export function Footer() {
                             Bridging the gap to clean energy. We provide premium solar solutions for homes and businesses across Zimbabwe.
                         </p>
                         <div className="flex gap-4">
-                            <a href="https://www.facebook.com/p/CrystalCred-Zimbabwe-61554197696461/" target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors">
-                                <Facebook size={20} />
-                            </a>
-                            <a href="#" className="hover:text-ring transition-colors"><Twitter size={20} /></a>
-                            <a href="#" className="hover:text-ring transition-colors"><Instagram size={20} /></a>
-                            <a href="#" className="hover:text-ring transition-colors"><Linkedin size={20} /></a>
+                            {settings?.socials?.facebook && (
+                                <a href={settings.socials.facebook} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors">
+                                    <Facebook size={20} />
+                                </a>
+                            )}
+                            {settings?.socials?.twitter && (
+                                <a href={settings.socials.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors">
+                                    <Twitter size={20} />
+                                </a>
+                            )}
+                            {settings?.socials?.instagram && (
+                                <a href={settings.socials.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors">
+                                    <Instagram size={20} />
+                                </a>
+                            )}
+                            {settings?.socials?.linkedin && (
+                                <a href={settings.socials.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors">
+                                    <Linkedin size={20} />
+                                </a>
+                            )}
+                            {settings?.socials?.youtube && (
+                                <a href={settings.socials.youtube} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors">
+                                    <Youtube size={20} />
+                                </a>
+                            )}
                         </div>
                     </div>
 
@@ -51,28 +113,31 @@ export function Footer() {
                         <ul className="space-y-4 text-sm text-white/80">
                             <li className="flex gap-3 items-start">
                                 <MapPin size={18} className="shrink-0 mt-0.5" />
-                                <span>Harare, Zimbabwe</span>
+                                <span>{settings?.contact?.address || "Loading..."}</span>
                             </li>
                             <li className="flex gap-3 items-center">
                                 <Phone size={18} className="shrink-0" />
-                                <span>+263 78 561 2227</span>
+                                <span>{settings?.contact?.phone || "Loading..."}</span>
                             </li>
                             <li className="flex gap-3 items-center">
                                 <Mail size={18} className="shrink-0" />
-                                <span>info@crystalcred.co.zw</span>
+                                <span>{settings?.contact?.email || "Loading..."}</span>
                             </li>
-                            <li className="flex gap-3 items-center text-ring font-medium">
-                                <MessageCircle size={18} className="shrink-0" />
-                                <a href="https://wa.me/263785612227" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
-                            </li>
+                            {settings?.contact?.whatsapp && (
+                                <li className="flex gap-3 items-center text-ring font-medium">
+                                    <MessageCircle size={18} className="shrink-0" />
+                                    <a href={settings.contact.whatsapp} target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+                                </li>
+                            )}
                         </ul>
                     </div>
                 </div>
 
                 <div className="border-t border-white/10 pt-8 text-center text-sm text-white/60">
-                    <p>&copy; {new Date().getFullYear()} CrystalCred. All rights reserved.</p>
+                    <p>&copy; {currentYear} CrystalCred. All rights reserved.</p>
                 </div>
             </div>
         </footer>
-    )
+    );
 }
+
