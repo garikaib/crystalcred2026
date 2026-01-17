@@ -4,11 +4,15 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar"
 import { AdminHeader } from "@/components/admin/AdminHeader"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-    // Proxy checks for session cookie, but we verify role here
-    const session = await auth()
+    let session = null
+    try {
+        session = await auth()
+    } catch (error) {
+        console.error("Auth error in AdminLayout:", error)
+    }
 
     // If no session or not admin role, redirect to login
-    if (!session || session.user?.role !== "admin") {
+    if (!session || (session.user as any)?.role !== "admin") {
         redirect("/admin/login")
     }
 
