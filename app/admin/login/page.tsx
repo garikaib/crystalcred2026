@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { signIn, getCsrfToken } from "next-auth/react"
+import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,24 +15,18 @@ export default function LoginPage() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [turnstileToken, setTurnstileToken] = useState("")
-    const [csrfToken, setCsrfToken] = useState("")
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const turnstileRef = useRef<HTMLDivElement>(null)
 
     const errorFromUrl = searchParams.get("error")
 
-    // Fetch CSRF token on mount
-    useEffect(() => {
-        getCsrfToken().then((token) => {
-            if (token) setCsrfToken(token)
-        })
-    }, [])
-
     useEffect(() => {
         if (errorFromUrl) {
             if (errorFromUrl === "CredentialsSignin") {
                 setError("Invalid username or password")
+            } else if (errorFromUrl === "MissingCSRF") {
+                setError("Security verification failed. Please try again or clear your browser cookies.")
             } else {
                 setError(errorFromUrl)
             }
@@ -63,18 +57,11 @@ export default function LoginPage() {
             return
         }
 
-        if (!csrfToken) {
-            setError("Session expired. Please refresh the page.")
-            setIsLoading(false)
-            return
-        }
-
         try {
             const result = await signIn("credentials", {
                 username,
                 password,
                 turnstileToken,
-                csrfToken,
                 redirect: false,
             })
 
