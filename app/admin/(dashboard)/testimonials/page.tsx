@@ -162,8 +162,8 @@ export default function AdminTestimonialsPage() {
             <MediaManager
                 open={showMediaManager}
                 onOpenChange={setShowMediaManager}
-                onSelect={(url) => {
-                    if (editingItem) setEditingItem({ ...editingItem, image: url })
+                onSelect={(item) => {
+                    if (editingItem) setEditingItem({ ...editingItem, image: item.url })
                     setShowMediaManager(false)
                 }}
             />

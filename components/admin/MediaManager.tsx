@@ -7,6 +7,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { MediaLibrary } from "./MediaLibrary"
@@ -31,9 +32,10 @@ export function MediaManager({ onSelect, trigger, open, onOpenChange }: MediaMan
                     {trigger}
                 </DialogTrigger>
             )}
-            <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0 gap-0">
+            <DialogContent className="max-w-7xl max-h-[85vh] flex flex-col p-0 gap-0">
                 <DialogHeader className="px-6 py-4 border-b">
                     <DialogTitle>Media Manager</DialogTitle>
+                    <DialogDescription className="hidden">Browse and manage your media files.</DialogDescription>
                 </DialogHeader>
                 <div className="flex-1 overflow-hidden">
                     <MediaLibrary

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { DeletePostButton } from "@/components/admin/DeletePostButton" // Client component for delete
+import { FileText, Globe } from "lucide-react"
 
 export default async function AdminBlogPage() {
     await dbConnect()
@@ -53,11 +54,25 @@ export default async function AdminBlogPage() {
                                 <TableRow key={post._id}>
                                     <TableCell className="font-medium">{post.title}</TableCell>
                                     <TableCell>
-                                        <Badge variant={post.status === "published" ? "default" : "secondary"}>
-                                            {post.status}
+                                        <Badge
+                                            variant={post.status === "published" ? "default" : "secondary"}
+                                            className={post.status === "published" ? "bg-green-100 text-green-700 hover:bg-green-200 border-green-200" : "bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-200"}
+                                        >
+                                            <div className="flex items-center gap-1.5 py-0.5">
+                                                {post.status === "published" ? (
+                                                    <Globe className="h-3 w-3" />
+                                                ) : (
+                                                    <FileText className="h-3 w-3" />
+                                                )}
+                                                <span className="capitalize">{post.status}</span>
+                                            </div>
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>{post.category}</TableCell>
+                                    <TableCell>
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 ring-1 ring-inset ring-teal-600/20">
+                                            {post.category}
+                                        </span>
+                                    </TableCell>
                                     <TableCell>{new Date(post.createdAt).toLocaleDateString()}</TableCell>
                                     <TableCell className="text-right space-x-2">
                                         {post.status === "published" && (

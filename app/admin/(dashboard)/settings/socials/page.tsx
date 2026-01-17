@@ -17,7 +17,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
+
+import { logActivityAction } from "@/app/actions/log-activity";
 
 // Helper schema for social links (URL, empty string, or #)
 const socialLinkSchema = z.union([
@@ -95,9 +97,10 @@ export default function SocialsSettingsPage() {
             if (!res.ok) throw new Error("Failed to update settings");
 
             toast({
-                title: "Success",
-                description: "Social media links updated successfully.",
+                title: "Social Links Saved",
+                description: "Your social media links have been updated successfully.",
             });
+            logActivityAction("updated_social_settings", "Updated social media links");
         } catch (error: any) {
             console.error(error);
             toast({

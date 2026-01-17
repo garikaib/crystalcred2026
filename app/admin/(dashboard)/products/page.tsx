@@ -360,22 +360,16 @@ export default function AdminProductsPage() {
                 </DialogContent>
             </Dialog>
 
-            <Dialog open={showMediaManager} onOpenChange={setShowMediaManager}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
-                    <DialogHeader className="sr-only">
-                        <DialogTitle>Media Library</DialogTitle>
-                        <DialogDescription>Select an image from the media library.</DialogDescription>
-                    </DialogHeader>
-                    <MediaManager
-                        onSelect={(item: any) => {
-                            if (editingProduct) {
-                                setEditingProduct({ ...editingProduct, image: item.url })
-                            }
-                            setShowMediaManager(false)
-                        }}
-                    />
-                </DialogContent>
-            </Dialog>
+            <MediaManager
+                open={showMediaManager}
+                onOpenChange={setShowMediaManager}
+                onSelect={(item: any) => {
+                    if (editingProduct) {
+                        setEditingProduct({ ...editingProduct, image: item.url })
+                    }
+                    setShowMediaManager(false)
+                }}
+            />
         </div>
     )
 }

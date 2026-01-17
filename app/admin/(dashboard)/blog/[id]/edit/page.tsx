@@ -24,7 +24,7 @@ export default async function EditBlogPostPage({ params }: PageProps) {
     }
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-[1600px] mx-auto">
             <h1 className="text-3xl font-bold mb-8">Edit Post</h1>
             <BlogForm initialData={JSON.parse(JSON.stringify(post))} isEditing />
         </div>

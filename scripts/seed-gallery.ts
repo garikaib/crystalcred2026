@@ -1,7 +1,9 @@
-
 import mongoose from "mongoose"
 import { GalleryItem } from "../models/GalleryItem"
 import dbConnect from "../lib/mongodb"
+import { ensureSafeToRun } from "./utils/safeguard"
+
+ensureSafeToRun();
 
 const galleryItems = [
     {

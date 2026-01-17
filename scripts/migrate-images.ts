@@ -1,9 +1,11 @@
-
 import mongoose from "mongoose"
 import fs from "fs"
 import path from "path"
 import { Media } from "../models/Media"
 import dotenv from "dotenv"
+import { ensureSafeToRun } from "./utils/safeguard"
+
+ensureSafeToRun();
 
 dotenv.config({ path: ".env.local" })
 

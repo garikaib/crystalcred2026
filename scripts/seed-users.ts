@@ -2,6 +2,9 @@ import mongoose from "mongoose"
 import { User } from "../models/User"
 import dbConnect from "../lib/mongodb"
 import crypto from "crypto"
+import { ensureSafeToRun } from "./utils/safeguard"
+
+ensureSafeToRun();
 
 // Generate a secure random password
 function generatePassword(length = 12): string {

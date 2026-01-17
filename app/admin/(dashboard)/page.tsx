@@ -5,25 +5,35 @@ import BlogPost from "@/models/BlogPost"
 import { Product } from "@/models/Product"
 import { GalleryItem } from "@/models/GalleryItem"
 
+import { formatDistanceToNow } from "date-fns"
+import ActivityLog from "@/models/ActivityLog"
+import Notice from "@/models/Notice"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle, Archive, CheckCircle2, Info, Bell, Clock } from "lucide-react"
+
 async function getStats() {
     await dbConnect()
 
     // Parallelize the database calls for performance
-    const [postCount, productCount, galleryCount] = await Promise.all([
+    const [postCount, productCount, galleryCount, recentActivity, notices] = await Promise.all([
         BlogPost.countDocuments(),
         Product.countDocuments(),
         GalleryItem.countDocuments(),
+        ActivityLog.find().sort({ createdAt: -1 }).limit(5).lean(),
+        Notice.find({ isActive: true }).sort({ createdAt: -1 }).lean()
     ])
 
     return {
         postCount,
         productCount,
-        galleryCount
+        galleryCount,
+        recentActivity: JSON.parse(JSON.stringify(recentActivity)),
+        notices: JSON.parse(JSON.stringify(notices))
     }
 }
 
 export default async function AdminDashboard() {
-    const { postCount, productCount, galleryCount } = await getStats()
+    const { postCount, productCount, galleryCount, recentActivity, notices } = await getStats()
 
     return (
         <div className="space-y-8">
@@ -36,6 +46,24 @@ export default async function AdminDashboard() {
                     Data: Real-time
                 </div>
             </div>
+
+            {/* Notices Section */}
+            {notices.length > 0 && (
+                <div className="space-y-4">
+                    {notices.map((notice: any) => (
+                        <Alert key={notice._id} variant={notice.type === 'destructive' ? 'destructive' : 'default'} className="bg-white border-l-4 border-l-primary shadow-sm">
+                            {notice.type === 'info' && <Info className="h-4 w-4" />}
+                            {notice.type === 'warning' && <AlertCircle className="h-4 w-4" />}
+                            {notice.type === 'success' && <CheckCircle2 className="h-4 w-4" />}
+                            {notice.type === 'destructive' && <Bell className="h-4 w-4" />}
+                            <AlertTitle>{notice.title}</AlertTitle>
+                            <AlertDescription>
+                                {notice.content}
+                            </AlertDescription>
+                        </Alert>
+                    ))}
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="border-none shadow-md bg-gradient-to-br from-blue-500 to-blue-600 text-white overflow-hidden relative group">
@@ -91,12 +119,37 @@ export default async function AdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
                 <Card className="shadow-sm border-gray-100">
                     <CardHeader>
-                        <CardTitle className="text-lg">Recent Activity</CardTitle>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Clock className="w-5 h-5 text-muted-foreground" />
+                            Recent Activity
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-sm text-gray-500 text-center py-8">
-                            Recent activity logging coming soon.
-                        </div>
+                        {recentActivity.length > 0 ? (
+                            <div className="space-y-6">
+                                {recentActivity.map((log: any) => (
+                                    <div key={log._id} className="flex gap-4 items-start relative pb-6 last:pb-0 border-l-2 border-slate-100 pl-4 ml-2 last:border-0">
+                                        <div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-slate-200 ring-4 ring-white"></div>
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-medium text-gray-900 leading-none">
+                                                {log.description}
+                                            </p>
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                <span>{log.user}</span>
+                                                <span>•</span>
+                                                <span title={new Date(log.createdAt).toLocaleString()}>
+                                                    {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-sm text-gray-500 text-center py-8">
+                                No recent activity found.
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
                 <Card className="shadow-sm border-gray-100">

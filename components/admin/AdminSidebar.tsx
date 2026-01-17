@@ -10,7 +10,8 @@ import {
     MessageSquareQuote,
     Settings,
     LogOut,
-    LayoutDashboard
+    LayoutDashboard,
+    Route,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -189,6 +190,21 @@ export function AdminSidebar() {
                                 pathname === "/admin/settings/security" ? "text-teal-400" : "text-slate-500 group-hover:text-white"
                             )} />
                             Security
+                        </Link>
+                        <Link
+                            href="/admin/redirects"
+                            className={cn(
+                                "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group",
+                                pathname === "/admin/redirects"
+                                    ? "bg-teal-600/10 text-teal-400 border border-teal-600/20"
+                                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                            )}
+                        >
+                            <Route size={18} className={cn(
+                                "transition-colors",
+                                pathname === "/admin/redirects" ? "text-teal-400" : "text-slate-500 group-hover:text-white"
+                            )} />
+                            Redirects
                         </Link>
                     </div>
                 </div>

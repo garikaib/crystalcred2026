@@ -199,6 +199,7 @@ export function MediaLibrary({ onSelect, selectionMode = false }: MediaLibraryPr
                                         </Button>
                                         {!selectionMode && (
                                             <Button
+                                                type="button"
                                                 variant="destructive"
                                                 size="icon"
                                                 className="h-8 w-8"
@@ -276,7 +277,7 @@ export function MediaLibrary({ onSelect, selectionMode = false }: MediaLibraryPr
                                 onChange={(e) => setUnsplashSearch(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && searchUnsplash()}
                             />
-                            <Button onClick={searchUnsplash} disabled={isSearchingUnsplash}>
+                            <Button type="button" onClick={searchUnsplash} disabled={isSearchingUnsplash}>
                                 {isSearchingUnsplash ? <Loader2 className="animate-spin h-4 w-4" /> : <Search className="h-4 w-4" />}
                             </Button>
                         </div>
@@ -289,6 +290,7 @@ export function MediaLibrary({ onSelect, selectionMode = false }: MediaLibraryPr
                                         <div className="text-[10px] text-white/80 mb-2 truncate">by {img.user.name}</div>
                                         <div className="flex gap-1">
                                             <Button
+                                                type="button"
                                                 size="sm"
                                                 className="h-7 flex-1 text-[10px]"
                                                 onClick={() => importFromUnsplash(img)}

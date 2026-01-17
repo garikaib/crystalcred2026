@@ -19,6 +19,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
+import { logActivityAction } from "@/app/actions/log-activity";
+
 // Helper schema for social links (URL, empty string, or #)
 const socialLinkSchema = z.union([
     z.string().url("Invalid URL"),
@@ -91,9 +93,11 @@ export default function ContactSettingsPage() {
             if (!res.ok) throw new Error("Failed to update settings");
 
             toast({
-                title: "Success",
-                description: "Contact information updated successfully.",
-            });
+                title: "Contact Info Saved",
+                description: "Your contact details have been updated successfully.",
+            })
+
+            logActivityAction("updated_contact_settings", "Updated contact information")
         } catch (error: any) {
             console.error(error);
             toast({

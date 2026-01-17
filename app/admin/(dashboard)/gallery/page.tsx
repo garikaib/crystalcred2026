@@ -177,16 +177,14 @@ export default function AdminGalleryPage() {
                     </DialogContent>
                 </Dialog>
 
-                <Dialog open={showMediaManager} onOpenChange={setShowMediaManager}>
-                    <DialogContent className="max-w-4xl p-0 overflow-hidden max-h-[90vh]">
-                        <MediaManager
-                            onSelect={(item: any) => {
-                                setCurrentItem({ ...currentItem, image: item.url })
-                                setShowMediaManager(false)
-                            }}
-                        />
-                    </DialogContent>
-                </Dialog>
+                <MediaManager
+                    open={showMediaManager}
+                    onOpenChange={setShowMediaManager}
+                    onSelect={(item: any) => {
+                        setCurrentItem({ ...currentItem, image: item.url })
+                        setShowMediaManager(false)
+                    }}
+                />
             </div>
 
             {isLoading ? (
