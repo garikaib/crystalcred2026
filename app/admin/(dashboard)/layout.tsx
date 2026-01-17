@@ -1,10 +1,16 @@
+import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { AdminSidebar } from "@/components/admin/AdminSidebar"
 import { AdminHeader } from "@/components/admin/AdminHeader"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-    // Session is guaranteed by middleware, but we still fetch it for user data
+    // Proxy checks for session cookie, but we verify role here
     const session = await auth()
+
+    // If no session or not admin role, redirect to login
+    if (!session || session.user?.role !== "admin") {
+        redirect("/admin/login")
+    }
 
     return (
         <div className="flex min-h-screen bg-gray-50/50">

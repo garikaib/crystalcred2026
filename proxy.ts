@@ -2,6 +2,27 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 export function proxy(request: NextRequest) {
+    const { pathname } = request.nextUrl
+
+    // Admin route protection
+    // Check if accessing admin routes (except login)
+    if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+        // Check for session cookie (authjs.session-token or __Secure-authjs.session-token)
+        const sessionCookie =
+            request.cookies.get("authjs.session-token") ||
+            request.cookies.get("__Secure-authjs.session-token") ||
+            request.cookies.get("next-auth.session-token") ||
+            request.cookies.get("__Secure-next-auth.session-token")
+
+        if (!sessionCookie) {
+            // No session, redirect to login
+            const loginUrl = new URL("/admin/login", request.url)
+            return NextResponse.redirect(loginUrl)
+        }
+        // Note: We can't verify the token content in Edge runtime without crypto,
+        // so we rely on the server-side auth() check in the layout for role verification
+    }
+
     // Get the response
     const response = NextResponse.next()
 
