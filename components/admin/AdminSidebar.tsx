@@ -119,6 +119,29 @@ export function AdminSidebar() {
 
                 <div>
                     <h3 className="text-xs uppercase text-slate-500 font-semibold tracking-wider mb-4 px-4">
+                        Pages
+                    </h3>
+                    <div className="space-y-1">
+                        <Link
+                            href="/admin/pages"
+                            className={cn(
+                                "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group",
+                                pathname?.startsWith("/admin/pages")
+                                    ? "bg-teal-600/10 text-teal-400 border border-teal-600/20"
+                                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                            )}
+                        >
+                            <FileText size={18} className={cn(
+                                "transition-colors",
+                                pathname?.startsWith("/admin/pages") ? "text-teal-400" : "text-slate-500 group-hover:text-white"
+                            )} />
+                            All Pages
+                        </Link>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 className="text-xs uppercase text-slate-500 font-semibold tracking-wider mb-4 px-4">
                         System
                     </h3>
                     <div className="space-y-1">
