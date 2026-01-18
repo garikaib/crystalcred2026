@@ -1,20 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google"; // Corrected import
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { AdminAwareLayout } from "@/components/layout/AdminAwareLayout";
+import { GoogleAnalytics } from '@next/third-parties/google';
+import { LocalTracker } from "@/components/analytics/LocalTracker";
+import { Suspense } from "react";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://next.crystalcred.co.zw'),
+  metadataBase: new URL('https://crystalcred.co.zw'),
   title: {
     default: "CrystalCred | Bridging the Gap to Clean Energy",
     template: "%s | CrystalCred"
@@ -36,7 +34,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_ZW",
-    url: "https://next.crystalcred.co.zw",
+    url: "https://crystalcred.co.zw",
     siteName: "CrystalCred",
     title: "CrystalCred | Bridging the Gap to Clean Energy",
     description: "Premium solar energy solutions in Zimbabwe. Authorized distributors of top inverter and battery brands.",
@@ -75,11 +73,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="font-sans antialiased bg-background text-foreground min-h-screen flex flex-col" suppressHydrationWarning>
+    <html lang="en">
+      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground min-h-screen flex flex-col`} suppressHydrationWarning>
         <AdminAwareLayout>
           {children}
         </AdminAwareLayout>
+        <GoogleAnalytics gaId="G-3XHN675BGF" />
+        <Suspense fallback={null}>
+          <LocalTracker />
+        </Suspense>
       </body>
     </html>
   );

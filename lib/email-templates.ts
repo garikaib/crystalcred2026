@@ -47,7 +47,7 @@ function baseLayout(title: string, content: string): string {
                 &copy; ${new Date().getFullYear()} CrystalCred. All rights reserved.
               </p>
               <p style="margin: 10px 0 0; font-size: 12px; color: ${emailStyles.colors.muted};">
-                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://crystalcred.co.zw'}" style="color: ${emailStyles.colors.primary}; text-decoration: none;">Visit Website</a>
+                <a href="${process.env.NODE_ENV === 'production' ? 'https://crystalcred.co.zw' : (process.env.NEXT_PUBLIC_APP_URL || 'https://crystalcred.co.zw')}" style="color: ${emailStyles.colors.primary}; text-decoration: none;">Visit Website</a>
               </p>
             </td>
           </tr>
@@ -118,4 +118,21 @@ export function magicLinkEmail(url: string, host: string): string {
     <p style="font-size: 14px; color: ${emailStyles.colors.muted};">If you didn't request this email, you can safely ignore it.</p>
   `
   return baseLayout(`Sign in to ${host}`, content)
+}
+
+export function passwordChangedByAdminEmail(name: string): string {
+  const content = `
+    <h2 style="margin-top: 0; color: ${emailStyles.colors.primary};">Password Changed by Administrator</h2>
+    <p>Hi ${name},</p>
+    <p>Your password for the CrystalCred admin portal has been changed by an administrator.</p>
+    <div style="background-color: ${emailStyles.colors.background}; padding: 15px; border-left: 4px solid ${emailStyles.colors.primary}; margin: 20px 0;">
+      <p style="margin: 0; font-weight: bold;">Important:</p>
+      <p style="margin: 5px 0 0;">Please contact the administrator to receive your new login credentials.</p>
+    </div>
+    <p>If you did not authorize this change or believe this is an error, please contact support immediately.</p>
+    <br>
+    <p>Best regards,</p>
+    <p><strong>The CrystalCred Team</strong></p>
+  `
+  return baseLayout("Security Alert: Password Changed", content)
 }

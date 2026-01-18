@@ -22,6 +22,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
+import { getImageUrl } from "@/lib/utils"
 
 interface Product {
     _id: string
@@ -208,7 +209,7 @@ export default function ShopPage() {
                                         <div className="relative h-56 w-full bg-gray-100 overflow-hidden">
                                             {product.image ? (
                                                 <Image
-                                                    src={product.image}
+                                                    src={getImageUrl(product.image)}
                                                     alt={product.name}
                                                     fill
                                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"

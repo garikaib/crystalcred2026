@@ -3,6 +3,7 @@ import Link from "next/link"
 import { CheckCircle2, Users, Target, Lightbulb, ArrowRight, ShieldCheck } from "lucide-react"
 import { CTASection } from "@/components/sections/CTASection"
 import { Button } from "@/components/ui/button"
+import { getImageUrl } from "@/lib/utils"
 import Page from "@/models/Page"
 import { notFound } from "next/navigation"
 import dbConnect from "@/lib/mongodb"
@@ -58,7 +59,7 @@ export default async function AboutPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
                         <div className="relative h-[500px] w-full rounded-3xl overflow-hidden shadow-premium-lg group">
                             <Image
-                                src={story.image}
+                                src={getImageUrl(story.image)}
                                 alt="CrystalCred Solar Installation"
                                 fill
                                 sizes="(max-width: 768px) 100vw, 50vw"

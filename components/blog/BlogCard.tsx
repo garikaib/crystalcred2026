@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Image as ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { getImageUrl } from "@/lib/utils"
 
 interface BlogPost {
     _id: string
@@ -24,7 +25,7 @@ export function BlogCard({ post }: { post: BlogPost }) {
             <div className="relative aspect-video w-full bg-muted/30 overflow-hidden">
                 {post.featuredImage ? (
                     <Image
-                        src={post.featuredImage}
+                        src={getImageUrl(post.featuredImage)}
                         alt={post.title}
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-105"

@@ -44,8 +44,17 @@ const mainNavItems = [
     },
 ]
 
+import { useSession, signOut } from "next-auth/react"
+import { Users } from "lucide-react"
+
+// ... imports ...
+
 export function SidebarContent() {
     const pathname = usePathname()
+    const { data: session } = useSession()
+
+    // Check for Super Admin
+    const isSuperAdmin = session?.user?.email === "garikaib@gmail.com" || session?.user?.name === "garikaib"
 
     return (
         <div className="flex flex-col h-full">
@@ -115,6 +124,25 @@ export function SidebarContent() {
                                 </Link>
                             )
                         })}
+
+                        {/* Super Admin Only Link */}
+                        {isSuperAdmin && (
+                            <Link
+                                href="/admin/users"
+                                className={cn(
+                                    "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group",
+                                    pathname === "/admin/users"
+                                        ? "bg-teal-600/10 text-teal-400 border border-teal-600/20"
+                                        : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                                )}
+                            >
+                                <Users size={18} className={cn(
+                                    "transition-colors",
+                                    pathname === "/admin/users" ? "text-teal-400" : "text-slate-500 group-hover:text-white"
+                                )} />
+                                Users
+                            </Link>
+                        )}
                     </div>
                 </div>
 
@@ -211,16 +239,14 @@ export function SidebarContent() {
             </nav>
 
             <div className="p-4 border-t border-slate-800 bg-slate-950/50">
-                <form action="/api/auth/signout" method="POST">
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-3"
-                        type="submit"
-                    >
-                        <LogOut size={18} />
-                        Sign Out
-                    </Button>
-                </form>
+                <Button
+                    variant="ghost"
+                    className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-3"
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                >
+                    <LogOut size={18} />
+                    Sign Out
+                </Button>
             </div>
         </div>
     )

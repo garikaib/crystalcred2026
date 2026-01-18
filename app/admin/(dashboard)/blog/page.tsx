@@ -13,12 +13,43 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { DeletePostButton } from "@/components/admin/DeletePostButton" // Client component for delete
+import { DeletePostButton } from "@/components/admin/DeletePostButton"
 import { FileText, Globe } from "lucide-react"
+import { Search } from "@/components/admin/Search"
+import { PaginationControls } from "@/components/admin/PaginationControls"
 
-export default async function AdminBlogPage() {
+export default async function AdminBlogPage({
+    searchParams,
+}: {
+    searchParams?: Promise<{
+        q?: string
+        page?: string
+    }>
+}) {
     await dbConnect()
-    const posts = await BlogPost.find({}).sort({ createdAt: -1 }).lean()
+
+    // Await params for Next.js 15+ compatibility
+    const params = await searchParams;
+    const query = params?.q || ""
+    const currentPage = Number(params?.page) || 1
+    const itemsPerPage = 10
+
+    // Build Search Query
+    const searchCondition = query
+        ? { title: { $regex: query, $options: "i" } }
+        : {}
+
+    // Fetch Data
+    const totalCount = await BlogPost.countDocuments(searchCondition)
+    const posts = await BlogPost.find(searchCondition)
+        .sort({ createdAt: -1 })
+        .skip((currentPage - 1) * itemsPerPage)
+        .limit(itemsPerPage)
+        .lean()
+
+    const totalPages = Math.ceil(totalCount / itemsPerPage)
+    const hasNextPage = currentPage < totalPages
+    const hasPrevPage = currentPage > 1
 
     return (
         <div className="space-y-6">
@@ -29,6 +60,10 @@ export default async function AdminBlogPage() {
                         <Plus className="mr-2 h-4 w-4" /> Create New
                     </Link>
                 </Button>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+                <Search placeholder="Search by title..." />
             </div>
 
             <div className="bg-white rounded-md border">
@@ -46,7 +81,7 @@ export default async function AdminBlogPage() {
                         {posts.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
-                                    No posts found. Create your first one!
+                                    {query ? "No results found." : "No posts found. Create your first one!"}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -95,6 +130,16 @@ export default async function AdminBlogPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    hasNextPage={hasNextPage}
+                    hasPrevPage={hasPrevPage}
+                />
+            )}
         </div>
     )
 }

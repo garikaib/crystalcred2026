@@ -6,8 +6,10 @@ export default async function CatchAllPage({ params }: { params: Promise<{ catch
     const { catchAll } = await params
     const path = `/${catchAll.join("/")}`
 
-    // PROTECTION: Do not allow redirects for admin paths to prevent locking out admin or confusing loops
-    if (path.startsWith("/admin")) {
+    // PROTECTION: Do not allow redirects for admin or uploads paths
+    // /admin - prevents locking out admin or confusing loops
+    // /uploads - prevents intercepting static files needed for Next.js image optimization
+    if (path.startsWith("/admin") || path.startsWith("/uploads")) {
         notFound()
     }
 

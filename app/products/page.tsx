@@ -2,6 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, Battery, Zap, Sun, Box, Sparkles, Shield, Clock } from "lucide-react"
 import { CTASection } from "@/components/sections/CTASection"
+import { getImageUrl } from "@/lib/utils"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -136,7 +137,7 @@ export default function ProductsPage() {
                                 <div className="relative h-80 rounded-3xl overflow-hidden shadow-premium hover-lift">
                                     {/* Background Image */}
                                     <Image
-                                        src={category.image}
+                                        src={getImageUrl(category.image)}
                                         alt={category.name}
                                         fill
                                         sizes="(max-width: 768px) 100vw, 50vw"

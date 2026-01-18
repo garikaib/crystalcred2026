@@ -1,6 +1,6 @@
 "use client"
 
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { Bell, User, ChevronDown, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -75,18 +75,20 @@ export function AdminHeader() {
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                            <a href="/admin/settings/contact" className="cursor-pointer">Profile</a>
+                            <a href="/admin/profile" className="cursor-pointer">Profile</a>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <a href="/admin/settings/security" className="cursor-pointer">Settings</a>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                            <form action="/api/auth/signout" method="POST" className="w-full">
-                                <button type="submit" className="text-red-500 w-full text-left cursor-pointer">
-                                    Sign out
-                                </button>
-                            </form>
+                            <button
+                                type="button"
+                                onClick={() => signOut({ callbackUrl: "/" })}
+                                className="text-red-500 w-full text-left cursor-pointer"
+                            >
+                                Sign out
+                            </button>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

@@ -6,6 +6,7 @@ import Image from "next/image"
 import { ArrowRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { getImageUrl } from "@/lib/utils"
 
 interface Product {
     _id: string
@@ -69,7 +70,7 @@ export function FeaturedProducts() {
                             <div className="relative h-48 w-full bg-gray-100 overflow-hidden">
                                 {product.image ? (
                                     <Image
-                                        src={product.image}
+                                        src={getImageUrl(product.image)}
                                         alt={product.name}
                                         fill
                                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"

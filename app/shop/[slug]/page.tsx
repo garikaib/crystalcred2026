@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ChevronLeft, Phone, Mail, CheckCircle, TrendingUp, Award } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { getImageUrl } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CTASection } from "@/components/sections/CTASection"
 import dbConnect from "@/lib/mongodb"
@@ -99,7 +100,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                             <div className="relative aspect-square bg-gray-100 rounded-2xl overflow-hidden shadow-lg">
                                 {product.image ? (
                                     <Image
-                                        src={product.image}
+                                        src={getImageUrl(product.image)}
                                         alt={product.name}
                                         fill
                                         sizes="(max-width: 768px) 100vw, 50vw"
@@ -209,7 +210,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                                         <div className="relative h-48 bg-gray-100 overflow-hidden">
                                             {related.image ? (
                                                 <Image
-                                                    src={related.image}
+                                                    src={getImageUrl(related.image)}
                                                     alt={related.name}
                                                     fill
                                                     sizes="(max-width: 768px) 100vw, 25vw"

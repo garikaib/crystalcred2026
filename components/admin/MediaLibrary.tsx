@@ -2,13 +2,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Upload, Trash2, Check, Loader2, Image as ImageIcon, ExternalLink, Download } from "lucide-react"
+import { Search, Upload, Trash2, Check, Loader2, Image as ImageIcon, ExternalLink, Download, Edit3, X, Save } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { getImageUrl } from "@/lib/utils"
 import { IMedia } from "@/models/Media"
 
 interface MediaLibraryProps {
@@ -51,8 +53,26 @@ export function MediaLibrary({ onSelect, selectionMode = false }: MediaLibraryPr
     const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([])
     const [isUploading, setIsUploading] = useState(false)
 
+    // Edit State
+    const [editingItem, setEditingItem] = useState<IMedia | null>(null)
+    const [editForm, setEditForm] = useState({ title: "", altText: "", caption: "", description: "" })
+    const [isSaving, setIsSaving] = useState(false)
+
     useEffect(() => {
         fetchMedia()
+
+        // Poll for processing items
+        const interval = setInterval(() => {
+            setItems(prev => {
+                const hasProcessing = prev.some((i: any) => i.status === 'processing');
+                if (hasProcessing) {
+                    fetchMedia();
+                }
+                return prev;
+            })
+        }, 3000); // Check every 3 seconds
+
+        return () => clearInterval(interval);
     }, [])
 
     async function fetchMedia() {
@@ -172,8 +192,47 @@ export function MediaLibrary({ onSelect, selectionMode = false }: MediaLibraryPr
         }
     }
 
+    // Edit Logic
+    function startEditing(item: IMedia) {
+        setEditingItem(item)
+        setEditForm({
+            title: (item as any).title || "",
+            altText: (item as any).altText || "",
+            caption: (item as any).caption || "",
+            description: (item as any).description || "",
+        })
+    }
+
+    async function saveMetadata() {
+        if (!editingItem) return
+        setIsSaving(true)
+        try {
+            const formData = new FormData()
+            formData.append("_id", (editingItem as any)._id)
+            formData.append("title", editForm.title)
+            formData.append("altText", editForm.altText)
+            formData.append("caption", editForm.caption)
+            formData.append("description", editForm.description)
+
+            const res = await fetch("/api/media", {
+                method: "PUT",
+                body: formData,
+            })
+
+            if (res.ok) {
+                const updated = await res.json()
+                setItems(prev => prev.map(i => (i as any)._id === (editingItem as any)._id ? updated : i))
+                setEditingItem(null)
+            }
+        } catch (error) {
+            console.error("Save failed", error)
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
     return (
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col h-[600px]">
+        <div className="bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col h-full min-h-[70vh]">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
                 <div className="px-6 py-4 border-b bg-gray-50 flex items-center justify-between">
                     <TabsList>
@@ -183,137 +242,228 @@ export function MediaLibrary({ onSelect, selectionMode = false }: MediaLibraryPr
                     </TabsList>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6">
-                    <TabsContent value="library" className="mt-0 h-full">
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {items.map((item: any) => (
-                                <div
-                                    key={item._id}
-                                    className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden border hover:border-primary transition-all cursor-pointer"
-                                    onClick={() => onSelect?.(item)}
-                                >
-                                    <Image src={item.url} alt={item.altText} fill sizes="200px" className="object-cover" />
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                        <Button variant="secondary" size="icon" className="h-8 w-8">
-                                            <Check className="h-4 w-4" />
-                                        </Button>
-                                        {!selectionMode && (
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={(e) => { e.stopPropagation(); handleDelete(item._id); }}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                <div className="flex-1 overflow-hidden flex">
+                    {/* Main Content */}
+                    <div className="flex-1 overflow-y-auto p-6">
+                        <TabsContent value="library" className="mt-0 h-full">
+                            <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+                                {items.filter((i: any) => i.status !== 'error').map((item: any) => (
+                                    <div
+                                        key={item._id}
+                                        className={`group relative aspect-square bg-gray-100 rounded-lg overflow-hidden border hover:border-primary transition-all cursor-pointer ${editingItem?._id === item._id ? 'ring-2 ring-primary' : ''}`}
+                                        onClick={() => {
+                                            if (item.status === 'processing') return;
+                                            selectionMode ? onSelect?.(item) : startEditing(item)
+                                        }}
+                                    >
+                                        {item.status === 'processing' ? (
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-10">
+                                                <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
+                                                <span className="text-xs font-medium text-muted-foreground">Optimizing...</span>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <Image src={getImageUrl(item.url)} alt={item.altText || ""} fill sizes="150px" className="object-cover" />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                                                    {selectionMode ? (
+                                                        <Button variant="secondary" size="icon" className="h-7 w-7">
+                                                            <Check className="h-3 w-3" />
+                                                        </Button>
+                                                    ) : (
+                                                        <>
+                                                            <Button variant="secondary" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); startEditing(item); }}>
+                                                                <Edit3 className="h-3 w-3" />
+                                                            </Button>
+                                                            <Button
+                                                                type="button"
+                                                                variant="destructive"
+                                                                size="icon"
+                                                                className="h-7 w-7"
+                                                                onClick={(e) => { e.stopPropagation(); handleDelete(item._id); }}
+                                                            >
+                                                                <Trash2 className="h-3 w-3" />
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </>
                                         )}
                                     </div>
-                                </div>
-                            ))}
-                            {items.length === 0 && !isLoading && (
-                                <div className="col-span-full h-40 flex flex-col items-center justify-center text-muted-foreground">
-                                    <ImageIcon className="h-10 w-10 mb-2 opacity-20" />
-                                    <p>No media found</p>
+                                ))}
+                                {items.length === 0 && !isLoading && (
+                                    <div className="col-span-full h-40 flex flex-col items-center justify-center text-muted-foreground">
+                                        <ImageIcon className="h-10 w-10 mb-2 opacity-20" />
+                                        <p>No media found</p>
+                                    </div>
+                                )}
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="upload" className="mt-0">
+                            <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-12 bg-gray-50 mb-8">
+                                <Upload className="h-10 w-10 text-muted-foreground mb-4" />
+                                <h3 className="text-lg font-semibold mb-2">Upload Files</h3>
+                                <p className="text-sm text-muted-foreground mb-4">Click to select or drag and drop files</p>
+                                <Input
+                                    type="file"
+                                    className="hidden"
+                                    id="file-upload"
+                                    multiple
+                                    onChange={handleFileSelect}
+                                />
+                                <Button asChild>
+                                    <label htmlFor="file-upload" className="cursor-pointer">Select Files</label>
+                                </Button>
+                            </div>
+
+                            {uploadQueue.length > 0 && (
+                                <div className="space-y-4">
+                                    <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Upload Queue</h4>
+                                    {uploadQueue.map((item) => (
+                                        <div key={item.id} className="flex items-center gap-4 p-3 border rounded-lg bg-white">
+                                            <div className="relative h-10 w-10 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
+                                                {item.file.type.startsWith("image/") && (
+                                                    <Image
+                                                        src={URL.createObjectURL(item.file)}
+                                                        alt="preview"
+                                                        fill
+                                                        sizes="40px"
+                                                        className="object-cover"
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-sm font-medium truncate">{item.file.name}</div>
+                                                {item.status === 'uploading' && <Progress value={45} className="h-1 mt-1" />}
+                                                {item.status === 'error' && <span className="text-xs text-red-500">{item.error}</span>}
+                                            </div>
+                                            <div className="flex-shrink-0">
+                                                {item.status === 'success' && <Check className="h-5 w-5 text-green-500" />}
+                                                {item.status === 'uploading' && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
+                                                {item.status === 'pending' && <span className="text-xs text-muted-foreground">Waiting...</span>}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
-                        </div>
-                    </TabsContent>
+                        </TabsContent>
 
-                    <TabsContent value="upload" className="mt-0">
-                        <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-12 bg-gray-50 mb-8">
-                            <Upload className="h-10 w-10 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-semibold mb-2">Upload Files</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Click to select or drag and drop files</p>
-                            <Input
-                                type="file"
-                                className="hidden"
-                                id="file-upload"
-                                multiple
-                                onChange={handleFileSelect}
-                            />
-                            <Button asChild>
-                                <label htmlFor="file-upload" className="cursor-pointer">Select Files</label>
-                            </Button>
-                        </div>
+                        <TabsContent value="unsplash" className="mt-0 space-y-6">
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder="Search high-quality photos on Unsplash..."
+                                    value={unsplashSearch}
+                                    onChange={(e) => setUnsplashSearch(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && searchUnsplash()}
+                                />
+                                <Button type="button" onClick={searchUnsplash} disabled={isSearchingUnsplash}>
+                                    {isSearchingUnsplash ? <Loader2 className="animate-spin h-4 w-4" /> : <Search className="h-4 w-4" />}
+                                </Button>
+                            </div>
 
-                        {uploadQueue.length > 0 && (
-                            <div className="space-y-4">
-                                <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Upload Queue</h4>
-                                {uploadQueue.map((item) => (
-                                    <div key={item.id} className="flex items-center gap-4 p-3 border rounded-lg bg-white">
-                                        <div className="relative h-10 w-10 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
-                                            {item.file.type.startsWith("image/") && (
-                                                <Image
-                                                    src={URL.createObjectURL(item.file)}
-                                                    alt="preview"
-                                                    fill
-                                                    sizes="40px"
-                                                    className="object-cover"
-                                                />
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-medium truncate">{item.file.name}</div>
-                                            {item.status === 'uploading' && <Progress value={45} className="h-1 mt-1" />}
-                                            {item.status === 'error' && <span className="text-xs text-red-500">{item.error}</span>}
-                                        </div>
-                                        <div className="flex-shrink-0">
-                                            {item.status === 'success' && <Check className="h-5 w-5 text-green-500" />}
-                                            {item.status === 'uploading' && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
-                                            {item.status === 'pending' && <span className="text-xs text-muted-foreground">Waiting...</span>}
+                            <div className="grid grid-cols-3 lg:grid-cols-5 gap-3">
+                                {unsplashResults.map((img) => (
+                                    <div key={img.id} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden border transition-all">
+                                        <Image src={img.urls.thumb} alt={img.alt_description || ""} fill sizes="150px" className="object-cover" />
+                                        <div className="absolute inset-x-0 bottom-0 bg-black/60 p-2 translate-y-full group-hover:translate-y-0 transition-transform">
+                                            <div className="text-[10px] text-white/80 mb-2 truncate">by {img.user.name}</div>
+                                            <div className="flex gap-1">
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    className="h-7 flex-1 text-[10px]"
+                                                    onClick={() => importFromUnsplash(img)}
+                                                    disabled={importingId === img.id}
+                                                >
+                                                    {importingId === img.id ? (
+                                                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                                    ) : (
+                                                        <Download className="h-3 w-3 mr-1" />
+                                                    )}
+                                                    Import
+                                                </Button>
+                                                <Button size="icon" variant="outline" className="h-7 w-7 bg-white/10 text-white border-white/20" asChild>
+                                                    <a href={img.user.links.html} target="_blank" rel="noopener noreferrer">
+                                                        <ExternalLink className="h-3 w-3" />
+                                                    </a>
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                        )}
-                    </TabsContent>
+                        </TabsContent>
+                    </div>
 
-                    <TabsContent value="unsplash" className="mt-0 space-y-6">
-                        <div className="flex gap-2">
-                            <Input
-                                placeholder="Search high-quality photos on Unsplash..."
-                                value={unsplashSearch}
-                                onChange={(e) => setUnsplashSearch(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && searchUnsplash()}
-                            />
-                            <Button type="button" onClick={searchUnsplash} disabled={isSearchingUnsplash}>
-                                {isSearchingUnsplash ? <Loader2 className="animate-spin h-4 w-4" /> : <Search className="h-4 w-4" />}
-                            </Button>
-                        </div>
+                    {/* Edit Panel (Right Side) */}
+                    {editingItem && !selectionMode && (
+                        <div className="w-80 border-l bg-gray-50 p-4 overflow-y-auto">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-semibold">Edit Details</h3>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingItem(null)}>
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
 
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            {unsplashResults.map((img) => (
-                                <div key={img.id} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden border transition-all">
-                                    <Image src={img.urls.thumb} alt={img.alt_description || ""} fill sizes="200px" className="object-cover" />
-                                    <div className="absolute inset-x-0 bottom-0 bg-black/60 p-2 translate-y-full group-hover:translate-y-0 transition-transform">
-                                        <div className="text-[10px] text-white/80 mb-2 truncate">by {img.user.name}</div>
-                                        <div className="flex gap-1">
-                                            <Button
-                                                type="button"
-                                                size="sm"
-                                                className="h-7 flex-1 text-[10px]"
-                                                onClick={() => importFromUnsplash(img)}
-                                                disabled={importingId === img.id}
-                                            >
-                                                {importingId === img.id ? (
-                                                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                                                ) : (
-                                                    <Download className="h-3 w-3 mr-1" />
-                                                )}
-                                                Import
-                                            </Button>
-                                            <Button size="icon" variant="outline" className="h-7 w-7 bg-white/10 text-white border-white/20" asChild>
-                                                <a href={img.user.links.html} target="_blank" rel="noopener noreferrer">
-                                                    <ExternalLink className="h-3 w-3" />
-                                                </a>
-                                            </Button>
-                                        </div>
-                                    </div>
+                            <div className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden mb-4">
+                                <Image src={getImageUrl((editingItem as any).url)} alt="" fill className="object-cover" />
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <Label htmlFor="edit-title">Title</Label>
+                                    <Input
+                                        id="edit-title"
+                                        value={editForm.title}
+                                        onChange={(e) => setEditForm(f => ({ ...f, title: e.target.value }))}
+                                        placeholder="Image title"
+                                    />
                                 </div>
-                            ))}
+                                <div>
+                                    <Label htmlFor="edit-alt">Alt Text</Label>
+                                    <Input
+                                        id="edit-alt"
+                                        value={editForm.altText}
+                                        onChange={(e) => setEditForm(f => ({ ...f, altText: e.target.value }))}
+                                        placeholder="Describe the image"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="edit-caption">Caption</Label>
+                                    <Input
+                                        id="edit-caption"
+                                        value={editForm.caption}
+                                        onChange={(e) => setEditForm(f => ({ ...f, caption: e.target.value }))}
+                                        placeholder="Optional caption"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="edit-description">Description</Label>
+                                    <Textarea
+                                        id="edit-description"
+                                        value={editForm.description}
+                                        onChange={(e) => setEditForm(f => ({ ...f, description: e.target.value }))}
+                                        placeholder="Detailed description"
+                                        rows={3}
+                                    />
+                                </div>
+
+                                <div className="pt-4 border-t flex gap-2">
+                                    <Button className="flex-1" onClick={saveMetadata} disabled={isSaving}>
+                                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                                        Save
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        onClick={() => { handleDelete((editingItem as any)._id); setEditingItem(null); }}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
-                    </TabsContent>
+                    )}
                 </div>
             </Tabs>
         </div>

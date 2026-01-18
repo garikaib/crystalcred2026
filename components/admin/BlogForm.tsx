@@ -9,6 +9,7 @@ import { Loader2, Lock, Unlock, Settings2, Plus, FileText, Globe, ImageIcon, Eye
 import RichTextEditor from "@/components/editor/RichTextEditor"
 import { useToast } from "@/hooks/use-toast"
 import { logActivityAction } from "@/app/actions/log-activity"
+import { useDebounce } from "@/hooks/use-debounce"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -52,6 +53,14 @@ export function BlogForm({ initialData, isEditing = false }: BlogFormProps) {
     const router = useRouter()
     const { toast } = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isAutosaving, setIsAutosaving] = useState(false)
+    const [lastSaved, setLastSaved] = useState<Date | null>(null)
+    const [postId, setPostId] = useState<string | undefined>(initialData?._id)
+
+    // Track active editing state for UI and Logic updates
+    const [activeIsEditing, setActiveIsEditing] = useState(isEditing)
+    const [activeInitialData, setActiveInitialData] = useState(initialData)
+
     const [isSlugEditable, setIsSlugEditable] = useState(false)
     const [createRedirect, setCreateRedirect] = useState(true)
     const [categories, setCategories] = useState<any[]>([])
@@ -78,8 +87,6 @@ export function BlogForm({ initialData, isEditing = false }: BlogFormProps) {
             if (res.ok) {
                 const data = await res.json()
                 setCategories(data)
-
-                // If no categories found, we should probably add General as a default option if it's missing
                 if (data.length === 0) {
                     setCategories([{ _id: "default", name: "General", slug: "general" }])
                 }
@@ -95,18 +102,38 @@ export function BlogForm({ initialData, isEditing = false }: BlogFormProps) {
         fetchCategories()
     }, [fetchCategories])
 
-    // Helper to generate URL-friendly slugs
+    // Autosave Logic
+    const formValues = form.watch()
+    const debouncedValues = useDebounce(formValues, 3000)
+
+    useEffect(() => {
+        const autoSave = async () => {
+            if (!debouncedValues.title || !form.formState.isDirty || isSubmitting) return
+
+            // Don't autosave if we are creating a fresh post without a title yet (zod handles min length)
+            if (debouncedValues.title.length < 5) return
+
+            setIsAutosaving(true)
+            try {
+                await savePost(debouncedValues as z.infer<typeof formSchema>, true)
+            } catch (error) {
+                console.error("Autosave failed", error)
+            } finally {
+                setIsAutosaving(false)
+            }
+        }
+        autoSave()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedValues])
+
+
     const generateSlug = (text: string) => {
-        return text
-            .toString()
-            .toLowerCase()
-            .trim()
-            .replace(/\s+/g, '-')     // Replace spaces with -
-            .replace(/[^\w\-]+/g, '') // Remove all non-word chars
-            .replace(/\-\-+/g, '-')   // Replace multiple - with single -
+        return text.toString().toLowerCase().trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-')
     }
 
-    // Helper for SEO Status
     const getSeoStatus = (text: string = "") => {
         const length = text.length
         let width = 0
@@ -114,99 +141,76 @@ export function BlogForm({ initialData, isEditing = false }: BlogFormProps) {
         let textColor = "text-slate-500"
         let label = "Enter a summary"
 
-        if (length === 0) {
-            return { width: 0, color: "bg-slate-200", textColor: "text-slate-400", label: "Empty" }
-        }
-
+        if (length === 0) return { width: 0, color: "bg-slate-200", textColor: "text-slate-400", label: "Empty" }
         if (length < 120) {
-            width = (length / 160) * 100
-            color = "bg-orange-400"
-            textColor = "text-orange-600"
-            label = "Too Short (aim for 120-160 chars)"
+            width = (length / 160) * 100; color = "bg-orange-400"; textColor = "text-orange-600"; label = "Too Short"
         } else if (length <= 160) {
-            width = (length / 160) * 100
-            color = "bg-green-500"
-            textColor = "text-green-600"
-            label = "Optimal Length"
+            width = (length / 160) * 100; color = "bg-green-500"; textColor = "text-green-600"; label = "Optimal"
         } else {
-            width = 100
-            color = "bg-red-500"
-            textColor = "text-red-600"
-            label = "Too Long (might be truncated)"
+            width = 100; color = "bg-red-500"; textColor = "text-red-600"; label = "Too Long"
+        }
+        return { width, color, textColor, label, length }
+    }
+
+    async function savePost(values: z.infer<typeof formSchema>, isAuto: boolean = false) {
+        const isUpdate = !!postId
+        const url = isUpdate ? `/api/blog/${postId}` : "/api/blog"
+        const method = isUpdate ? "PUT" : "POST"
+
+        const res = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(values),
+        })
+
+        if (!res.ok) throw new Error("Failed to save post")
+
+        const data = await res.json()
+
+        if (!isUpdate && data._id) {
+            setPostId(data._id)
+            setActiveIsEditing(true)
+            setActiveInitialData(data)
+            window.history.replaceState(null, "", `/admin/blog/${data._id}/edit`)
+            if (!isAuto) toast({ title: "Post Created", description: "You can continue editing." })
         }
 
-        return { width, color, textColor, label, length }
+        setLastSaved(new Date())
+
+        // Reset dirty state after successful save so autosave doesn't loop
+        form.reset(values)
+
+        // Handle Redirects on manual update
+        if (!isAuto && isUpdate && activeInitialData?.status === 'published' && activeInitialData.slug !== values.slug && createRedirect) {
+            try {
+                await fetch("/api/admin/redirects", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        source: `/knowledge/${activeInitialData.slug}`,
+                        destination: `/knowledge/${values.slug}`,
+                        type: 301
+                    })
+                })
+            } catch (err) { console.error("Redirect error", err) }
+        }
+
+        if (!isAuto && isUpdate) {
+            toast({ title: "Post Updated", description: "Changes saved successfully." })
+        }
+
+        if (!isAuto) {
+            logActivityAction(isUpdate ? "updated_post" : "created_post", `${isUpdate ? "Updated" : "Created"}: ${values.title}`, { slug: values.slug, id: data._id })
+        }
     }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true)
         try {
-
-            const url = isEditing ? `/api/blog/${initialData._id}` : "/api/blog"
-            const method = isEditing ? "PUT" : "POST"
-
-            const res = await fetch(url, {
-                method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(values),
-            })
-
-            if (!res.ok) throw new Error("Failed to save post")
-
-            // Handle Auto-Redirect
-            if (isEditing && initialData.status === 'published' && initialData.slug !== values.slug && createRedirect) {
-                try {
-                    const redirectRes = await fetch("/api/admin/redirects", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            source: `/knowledge/${initialData.slug}`,
-                            destination: `/knowledge/${values.slug}`,
-                            type: 301 // Ensuring it's a number as per schema
-                        })
-                    })
-
-                    if (redirectRes.ok) {
-                        toast({
-                            title: "Redirect Created",
-                            description: `Forwarding /knowledge/${initialData.slug} to the new URL.`,
-                        })
-                    } else {
-                        const errData = await redirectRes.json()
-                        console.error("Redirect creation failed", errData)
-                        toast({
-                            variant: "destructive",
-                            title: "Redirect Info",
-                            description: errData.error || "Could not auto-create redirect. It might already exist.",
-                        })
-                    }
-
-                } catch (err) {
-                    console.error("Failed to auto-create redirect", err)
-                }
-            }
-
-            toast({
-                title: isEditing ? "Post Updated" : "Post Created",
-                description: `"${values.title}" has been saved successfully.`,
-            })
-
-            // Log Activity asynchronously (don't await to keep UI snappy)
-            logActivityAction(
-                isEditing ? "updated_post" : "created_post",
-                `${isEditing ? "Updated" : "Created"} blog post: ${values.title}`,
-                { slug: values.slug, id: isEditing ? initialData._id : undefined }
-            )
-
-            router.push("/admin/blog")
-            router.refresh()
+            await savePost(values, false)
         } catch (error) {
             console.error(error)
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Something went wrong. Please try again.",
-            })
+            toast({ variant: "destructive", title: "Error", description: "Save failed. Try again." })
         } finally {
             setIsSubmitting(false)
         }
@@ -214,15 +218,8 @@ export function BlogForm({ initialData, isEditing = false }: BlogFormProps) {
 
     const handlePreview = () => {
         const slug = form.getValues("slug") || initialData?.slug
-        if (slug) {
-            window.open(`/knowledge/${slug}`, '_blank')
-        } else {
-            toast({
-                title: "Cannot Preview",
-                description: "This post needs a slug before it can be previewed.",
-                variant: "destructive"
-            })
-        }
+        if (slug) window.open(`/knowledge/${slug}`, '_blank')
+        else toast({ title: "Cannot Preview", description: "Slug required.", variant: "destructive" })
     }
 
     return (

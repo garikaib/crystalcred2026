@@ -6,7 +6,7 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Menu, X, Phone, Sun } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import { cn, getImageUrl } from "@/lib/utils"
 // import { Button } from "@/components/ui/button"
 // import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
@@ -47,7 +47,7 @@ export function Header() {
         <Link href="/" className="flex items-center gap-2">
           <div className="relative h-10 w-10 overflow-hidden rounded-full bg-white/20">
             <Image
-              src="/uploads/1768564582084-cropped_logo.png"
+              src={getImageUrl("/uploads/1768564582084-cropped_logo.png")}
               alt="CrystalCred Logo"
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

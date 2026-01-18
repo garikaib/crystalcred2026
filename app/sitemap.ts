@@ -4,7 +4,7 @@ import BlogPost from '@/models/BlogPost'
 import { Product } from '@/models/Product'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = 'https://next.crystalcred.co.zw'
+    const baseUrl = 'https://crystalcred.co.zw'
 
     await dbConnect()
     let posts: any[] = []

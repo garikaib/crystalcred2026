@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Plus, Pencil, Trash2, GripVertical, Image as ImageIcon } from "lucide-react"
+import { getImageUrl } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -142,7 +143,7 @@ export default function AdminGalleryPage() {
                                     {currentItem.image ? (
                                         <div className="relative w-32 h-24 rounded-lg overflow-hidden border">
                                             <Image
-                                                src={currentItem.image}
+                                                src={getImageUrl(currentItem.image)}
                                                 alt="Preview"
                                                 fill
                                                 sizes="128px"
@@ -195,7 +196,7 @@ export default function AdminGalleryPage() {
                         <div key={item._id} className="group relative bg-white rounded-lg border overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                             <div className="relative h-48 w-full">
                                 <Image
-                                    src={item.image}
+                                    src={getImageUrl(item.image)}
                                     alt={item.title}
                                     fill
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

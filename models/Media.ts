@@ -16,6 +16,8 @@ export interface IMedia extends Document {
         medium?: { url: string; width: number; height: number }
         large?: { url: string; width: number; height: number }
     }
+    status: 'processing' | 'ready' | 'error'
+    error?: string
     createdAt: Date
     updatedAt: Date
 }
@@ -49,6 +51,12 @@ const MediaSchema = new Schema<IMedia>(
                 height: Number,
             },
         },
+        status: {
+            type: String,
+            enum: ['processing', 'ready', 'error'],
+            default: 'processing'
+        },
+        error: { type: String },
     },
     { timestamps: true }
 )

@@ -4,7 +4,7 @@
 cd "$(dirname "$0")/.." # Ensure we are in the project root
 REMOTE_HOST="51.195.252.90"
 REMOTE_USER="ubuntu"
-DOMAIN="next.crystalcred.co.zw"
+DOMAIN="crystalcred.co.zw"
 REMOTE_DIR="/var/www/$DOMAIN"
 SSH_OPTS="-o StrictHostKeyChecking=no" 
 ARCHIVE_NAME="deploy.tar.zst"
@@ -48,29 +48,49 @@ fi
 # 4. Remote Commands
 echo "🔧 Running remote commands with sudo..."
 ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" << EOF
-    # Create directory if it doesn't exist
+    # Create directories
     sudo mkdir -p $REMOTE_DIR
-    sudo chown $REMOTE_USER:$REMOTE_USER $REMOTE_DIR
+    sudo mkdir -p ~/deploy_staging
+    sudo chown $REMOTE_USER:$REMOTE_USER $REMOTE_DIR ~/deploy_staging
 
-    # Unpack archive
-    echo "📦 Unpacking source archive..."
-    sudo tar -I zstd -xf ~/$ARCHIVE_NAME -C $REMOTE_DIR
+    # Unpack to staging directory
+    echo "📦 Unpacking source archive to staging..."
+    rm -rf ~/deploy_staging/*
+    tar -I zstd -xf ~/$ARCHIVE_NAME -C ~/deploy_staging
     
     # Move environment file
     echo "🔑 Updating environment variables..."
-    mv ~/.env $REMOTE_DIR/.env
+    mv ~/.env ~/deploy_staging/.env
     
     # Cleanup remote archive
     rm ~/$ARCHIVE_NAME
     
+    # rsync to app directory with exclusions (protect user data)
+    echo "🔄 Syncing files (protecting uploads and env)..."
+    rsync -a --delete \
+        --exclude 'public/uploads/' \
+        --exclude '.env' \
+        --exclude 'node_modules/' \
+        --exclude '.next/' \
+        ~/deploy_staging/ $REMOTE_DIR/
+    
+    # Copy .env separately (only if not exists or if we transferred a new one)
+    if [ -f ~/deploy_staging/.env ]; then
+        cp ~/deploy_staging/.env $REMOTE_DIR/.env
+    fi
+    
     cd $REMOTE_DIR
+    
+    # Ensure uploads directory exists
+    echo "📁 Ensuring uploads directory exists..."
+    mkdir -p public/uploads
     
     # Fix ownership
     sudo chown -R $REMOTE_USER:$REMOTE_USER .
 
     # Install dependencies (Full Install required for build)
     echo "📥 Installing dependencies (npm ci)..."
-    sudo rm -rf node_modules
+    rm -rf node_modules
     npm ci --ignore-scripts
     
     # Stop PM2 to free memory for build
@@ -81,10 +101,15 @@ ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" << EOF
     echo "📦 Building on server (Turbopack)..."
     npm run build
     
-    # Flush Nginx cache
-    echo "🧹 Flushing Nginx cache..."
-    sudo rm -rf /var/cache/nginx/*
-    sudo systemctl reload nginx
+    # Update Nginx Configuration
+    echo "🌐 Updating Nginx configuration..."
+    sudo cp $REMOTE_DIR/resources/nginx.conf.template /etc/nginx/sites-available/crystalcred.co.zw
+    sudo ln -sf /etc/nginx/sites-available/crystalcred.co.zw /etc/nginx/sites-enabled/
+    sudo nginx -t && sudo systemctl reload nginx
+    
+    # Ensure Nginx (www-data) can access uploads
+    echo "🔐 Setting permissions for static file serving..."
+    sudo chmod o+rx $REMOTE_DIR $REMOTE_DIR/public
     
     # Restart PM2
     echo "🔄 Starting Service..."
@@ -92,6 +117,9 @@ ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" << EOF
     
     # Save PM2 list
     pm2 save
+    
+    # Cleanup staging
+    rm -rf ~/deploy_staging
 EOF
 
 # Cleanup local archive

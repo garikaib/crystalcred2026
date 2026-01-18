@@ -32,7 +32,7 @@ export function MediaManager({ onSelect, trigger, open, onOpenChange }: MediaMan
                     {trigger}
                 </DialogTrigger>
             )}
-            <DialogContent className="max-w-7xl max-h-[85vh] flex flex-col p-0 gap-0">
+            <DialogContent className="!w-[90vw] !max-w-[90vw] max-h-[85vh] flex flex-col p-0 gap-0">
                 <DialogHeader className="px-6 py-4 border-b">
                     <DialogTitle>Media Manager</DialogTitle>
                     <DialogDescription className="hidden">Browse and manage your media files.</DialogDescription>

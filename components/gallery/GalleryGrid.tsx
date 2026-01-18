@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { X, ZoomIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { getImageUrl } from "@/lib/utils"
 
 interface GalleryItem {
     _id: string
@@ -83,7 +84,7 @@ export function GalleryGrid() {
                             onClick={() => setSelectedItem(item)}
                         >
                             <Image
-                                src={item.image}
+                                src={getImageUrl(item.image)}
                                 alt={item.title}
                                 fill
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -128,7 +129,7 @@ export function GalleryGrid() {
                         <div className="flex flex-col md:flex-row h-[90vh] md:h-[80vh]">
                             <div className="relative flex-1 bg-black">
                                 <Image
-                                    src={selectedItem.image}
+                                    src={getImageUrl(selectedItem.image)}
                                     alt={selectedItem.title}
                                     fill
                                     className="object-contain"

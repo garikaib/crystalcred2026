@@ -47,7 +47,7 @@ export function AdminBar() {
                     variant="ghost"
                     size="sm"
                     className="h-6 text-xs text-red-400 hover:text-red-300 hover:bg-gray-700 px-2"
-                    onClick={() => signOut()}
+                    onClick={() => signOut({ callbackUrl: "/" })}
                 >
                     <LogOut size={14} className="mr-1" /> Logout
                 </Button>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, Suspense } from "react"
-import { signIn } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,15 @@ function LoginFormContent() {
     const [turnstileToken, setTurnstileToken] = useState("")
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
+    const { data: session, status } = useSession()
     const turnstileRef = useRef<HTMLDivElement>(null)
+
+    // Redirect if already authenticated
+    useEffect(() => {
+        if (status === "authenticated") {
+            router.push("/admin/blog")
+        }
+    }, [status, router])
 
     const errorFromUrl = searchParams.get("error")
 
@@ -105,7 +113,7 @@ function LoginFormContent() {
                 }
                 setTurnstileToken("")
             } else if (result?.ok) {
-                router.push("/admin")
+                router.push("/admin/blog")
                 router.refresh()
             }
         } catch (err) {

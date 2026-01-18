@@ -10,6 +10,7 @@ import ActivityLog from "@/models/ActivityLog"
 import Notice from "@/models/Notice"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Archive, CheckCircle2, Info, Bell, Clock } from "lucide-react"
+import { AnalyticsWidget } from "@/components/admin/AnalyticsWidget"
 
 async function getStats() {
     await dbConnect()
@@ -64,6 +65,11 @@ export default async function AdminDashboard() {
                     ))}
                 </div>
             )}
+
+            {/* Analytics Section */}
+            <div>
+                <AnalyticsWidget />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="border-none shadow-md bg-gradient-to-br from-blue-500 to-blue-600 text-white overflow-hidden relative group">

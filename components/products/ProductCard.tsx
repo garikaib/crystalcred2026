@@ -4,6 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { getImageUrl } from "@/lib/utils"
 
 interface ProductCardProps {
     _id: string
@@ -23,7 +24,7 @@ export function ProductCard({ _id, name, slug, category, price, image, descripti
             <div className="relative h-48 w-full bg-gray-100">
                 {image ? (
                     <Image
-                        src={image}
+                        src={getImageUrl(image)}
                         alt={name}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

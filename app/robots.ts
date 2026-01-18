@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: ['/admin/', '/api/'],
         },
-        sitemap: 'https://next.crystalcred.co.zw/sitemap.xml',
+        sitemap: 'https://crystalcred.co.zw/sitemap.xml',
     }
 }

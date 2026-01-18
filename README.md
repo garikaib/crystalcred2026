@@ -46,8 +46,16 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Deployment
 
-The project includes several utility scripts for deployment in the `scripts/` directory:
-- `deploy.sh`: Primary deployment sequence.
-- `get-ssl.sh`: Certbot SSL certificate management.
-- `security-scan.sh`: Local security auditing.
+The project uses a **hot-patch deployment** strategy that preserves user-generated content (uploads, database).
+
+```bash
+bash scripts/deploy.sh
+```
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for full details.
+
+## Documentation
+
+- [Deployment Strategy](docs/DEPLOYMENT.md): How deployments work, rsync exclusions, and troubleshooting.
+- [Project Philosophy](docs/PHILOSOPHY.md): Architecture principles, data separation, and security approach.
 

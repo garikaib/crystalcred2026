@@ -37,7 +37,7 @@ function MagicLoginContent() {
                     setStatus("success")
                     // Wait a moment for success animation then redirect
                     setTimeout(() => {
-                        router.push("/admin")
+                        router.push("/admin/blog")
                     }, 1500)
                 }
             } catch (error) {

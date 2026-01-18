@@ -11,6 +11,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card"
 import { Star, Loader2 } from "lucide-react"
 import Image from "next/image"
+import { getImageUrl } from "@/lib/utils"
 
 interface Testimonial {
     _id: string
@@ -78,7 +79,7 @@ export function Testimonials() {
                                                 {t.image && (
                                                     <div className="relative h-10 w-10 rounded-full overflow-hidden">
                                                         <Image
-                                                            src={t.image}
+                                                            src={getImageUrl(t.image)}
                                                             alt={t.name}
                                                             fill
                                                             sizes="40px"

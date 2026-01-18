@@ -33,16 +33,16 @@ export function proxy(request: NextRequest) {
         "Content-Security-Policy",
         [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://maps.googleapis.com https://www.googletagmanager.com https://www.google-analytics.com",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
-            "img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://*.googleusercontent.com",
-            "connect-src 'self' https://challenges.cloudflare.com",
-            "frame-src https://challenges.cloudflare.com",
+            "img-src 'self' data: blob: https://images.unsplash.com https://*.unsplash.com https://*.googleusercontent.com https://maps.gstatic.com https://maps.googleapis.com https://www.google-analytics.com https://www.googletagmanager.com",
+            "connect-src 'self' https://challenges.cloudflare.com https://maps.googleapis.com https://www.google-analytics.com https://region1.google-analytics.com",
+            "frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com",
             "worker-src 'self' blob:",
             "object-src 'none'",
             "base-uri 'self'",
-            "form-action 'self' https://crystalcred.co.zw",
+            "form-action 'self' https://crystalcred.co.zw https://*.crystalcred.co.zw",
             "frame-ancestors 'none'",
         ].join("; ")
     )
@@ -66,8 +66,9 @@ export const config = {
          * - api (API routes)
          * - _next/static (static files)
          * - _next/image (image optimization files)
+         * - uploads (uploaded media files - needed for image optimization)
          * - favicon.ico (favicon file)
          */
-        "/((?!api|_next/static|_next/image|favicon.ico|monitoring).*)",
+        "/((?!api|_next/static|_next/image|uploads|favicon.ico|monitoring).*)",
     ],
 }
