@@ -74,10 +74,20 @@ export function AdminHeader() {
                     <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Settings</DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <a href="/admin/settings/contact" className="cursor-pointer">Profile</a>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <a href="/admin/settings/security" className="cursor-pointer">Settings</a>
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-500">Sign out</DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <form action="/api/auth/signout" method="POST" className="w-full">
+                                <button type="submit" className="text-red-500 w-full text-left cursor-pointer">
+                                    Sign out
+                                </button>
+                            </form>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
