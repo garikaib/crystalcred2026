@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { MediaManager } from "@/components/admin/MediaManager"
 import Image from "next/image"
+import { getImageUrl } from "@/lib/utils"
 
 interface Testimonial {
     _id?: string
@@ -90,7 +91,7 @@ export default function AdminTestimonialsPage() {
                         {items.map((t) => (
                             <li key={t._id} className="flex items-center gap-4 p-4 hover:bg-gray-50">
                                 <div className="relative h-12 w-12 bg-gray-100 rounded-full overflow-hidden">
-                                    {t.image ? <Image src={t.image} alt={t.name} fill sizes="48px" className="object-cover" /> : <ImageIcon className="h-full w-full text-gray-300 p-2" />}
+                                    {t.image ? <Image src={getImageUrl(t.image)} alt={t.name} fill sizes="48px" className="object-cover" /> : <ImageIcon className="h-full w-full text-gray-300 p-2" />}
                                 </div>
                                 <div className="flex-1">
                                     <div className="font-medium">{t.name}</div>
@@ -138,7 +139,7 @@ export default function AdminTestimonialsPage() {
                                 <div className="flex items-center gap-4">
                                     {editingItem.image && (
                                         <div className="relative h-16 w-16 bg-gray-100 rounded-full overflow-hidden border">
-                                            <Image src={editingItem.image} alt="Preview" fill sizes="64px" className="object-cover" />
+                                            <Image src={getImageUrl(editingItem.image)} alt="Preview" fill sizes="64px" className="object-cover" />
                                         </div>
                                     )}
                                     <Button variant="outline" onClick={() => setShowMediaManager(true)}>

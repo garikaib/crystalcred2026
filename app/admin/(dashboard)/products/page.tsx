@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { Plus, Pencil, Trash2, GripVertical, Image as ImageIcon, Loader2, Search, Filter } from "lucide-react"
 import Image from "next/image"
+import { getImageUrl } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -181,7 +182,7 @@ export default function AdminProductsPage() {
                             <GripVertical className="h-5 w-5 text-gray-400 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="relative h-16 w-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                                 {p.image ? (
-                                    <Image src={p.image} alt={p.name} fill sizes="64px" className="object-cover" />
+                                    <Image src={getImageUrl(p.image)} alt={p.name} fill sizes="64px" className="object-cover" />
                                 ) : (
                                     <ImageIcon className="h-full w-full text-gray-300 p-4" />
                                 )}
@@ -291,7 +292,7 @@ export default function AdminProductsPage() {
                                 <div className="flex items-center gap-4">
                                     {editingProduct.image && (
                                         <div className="relative h-24 w-24 bg-gray-100 rounded overflow-hidden border">
-                                            <Image src={editingProduct.image} alt="Preview" fill sizes="96px" className="object-cover" />
+                                            <Image src={getImageUrl(editingProduct.image)} alt="Preview" fill sizes="96px" className="object-cover" />
                                         </div>
                                     )}
                                     <Button variant="outline" onClick={() => setShowMediaManager(true)}>

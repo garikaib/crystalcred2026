@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MediaManager } from "@/components/admin/MediaManager";
 import Image from "next/image";
+import { getImageUrl } from "@/lib/utils";
 
 // --- Page Specific Schemas & Components ---
 
@@ -180,7 +181,7 @@ function AboutPageEditor({ initialData, onSubmit, saving }: { initialData: any, 
                                                     {field.value ? (
                                                         <div className="relative aspect-video w-full max-w-md bg-gray-100 rounded-lg overflow-hidden border">
                                                             <Image
-                                                                src={field.value}
+                                                                src={getImageUrl(field.value)}
                                                                 alt="Story Image"
                                                                 fill
                                                                 className="object-cover"
