@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         await user.save()
 
         // Create magic URL - Pointing to a special login handler page
-        const origin = request.nextUrl.origin
+        const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
         const magicUrl = `${origin}/admin/magic-login?token=${magicToken}&email=${encodeURIComponent(user.email)}`
 
         // Send email

@@ -1,8 +1,7 @@
 "use client"
 
 import { useSession } from "next-auth/react"
-import { Bell, Search, User, ChevronDown } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { Bell, User, ChevronDown, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -13,20 +12,39 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+    Sheet,
+    SheetContent,
+    SheetTrigger,
+    SheetTitle,
+    SheetDescription,
+} from "@/components/ui/sheet"
+import { SidebarContent } from "./AdminSidebar"
 
 export function AdminHeader() {
     const { data: session } = useSession()
 
     return (
         <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-md border-b border-gray-100">
-            <div className="flex items-center gap-4 w-1/3">
-                <div className="relative w-full max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                        placeholder="Search..."
-                        className="pl-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                    />
-                </div>
+            <div className="flex items-center gap-4">
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className="md:hidden text-gray-400 hover:text-gray-600">
+                            <Menu size={24} />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="p-0 border-none w-64">
+                        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                        <SheetDescription className="sr-only">
+                            Main navigation menu for the admin dashboard
+                        </SheetDescription>
+                        <div className="bg-slate-900 h-full">
+                            <SidebarContent />
+                        </div>
+                    </SheetContent>
+                </Sheet>
+
+                <h1 className="text-xl font-bold text-gray-800 md:hidden">CrystalCred</h1>
             </div>
 
             <div className="flex items-center gap-4">

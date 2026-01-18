@@ -1,19 +1,19 @@
 export const emailStyles = {
-    colors: {
-        primary: "#0d9488",
-        background: "#f8fafc",
-        container: "#ffffff",
-        text: "#1a1a2e",
-        muted: "#64748b",
-        border: "#e2e8f0",
-    },
-    fonts: {
-        body: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-    },
+  colors: {
+    primary: "#0d9488",
+    background: "#f8fafc",
+    container: "#ffffff",
+    text: "#1a1a2e",
+    muted: "#64748b",
+    border: "#e2e8f0",
+  },
+  fonts: {
+    body: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+  },
 }
 
 function baseLayout(title: string, content: string): string {
-    return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -47,7 +47,7 @@ function baseLayout(title: string, content: string): string {
                 &copy; ${new Date().getFullYear()} CrystalCred. All rights reserved.
               </p>
               <p style="margin: 10px 0 0; font-size: 12px; color: ${emailStyles.colors.muted};">
-                <a href="https://crystalcred.co.zw" style="color: ${emailStyles.colors.primary}; text-decoration: none;">Visit Website</a>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://crystalcred.co.zw'}" style="color: ${emailStyles.colors.primary}; text-decoration: none;">Visit Website</a>
               </p>
             </td>
           </tr>
@@ -61,7 +61,7 @@ function baseLayout(title: string, content: string): string {
 }
 
 export function contactAdminEmail(data: { name: string; email: string; phone: string; message: string }): string {
-    const content = `
+  const content = `
     <h2 style="margin-top: 0; color: ${emailStyles.colors.primary};">New Contact Form Submission</h2>
     <div style="background-color: ${emailStyles.colors.background}; padding: 20px; border-radius: 6px; margin: 20px 0;">
       <p style="margin: 0 0 10px;"><strong>Name:</strong> ${data.name}</p>
@@ -73,11 +73,11 @@ export function contactAdminEmail(data: { name: string; email: string; phone: st
       ${data.message.replace(/\n/g, "<br>")}
     </div>
   `
-    return baseLayout(`New Contact from ${data.name}`, content)
+  return baseLayout(`New Contact from ${data.name}`, content)
 }
 
 export function userConfirmationEmail(name: string): string {
-    const content = `
+  const content = `
     <h2 style="margin-top: 0; color: ${emailStyles.colors.primary};">We Received Your Message</h2>
     <p>Hi ${name},</p>
     <p>Thank you for reaching out to <strong>CrystalCred</strong>. We have received your message and our team will review it shortly.</p>
@@ -86,11 +86,11 @@ export function userConfirmationEmail(name: string): string {
     <p>Best regards,</p>
     <p><strong>The CrystalCred Team</strong></p>
   `
-    return baseLayout("Message Received - CrystalCred", content)
+  return baseLayout("Message Received - CrystalCred", content)
 }
 
 export function resetPasswordEmail(resetUrl: string): string {
-    const content = `
+  const content = `
     <h2 style="margin-top: 0; color: ${emailStyles.colors.primary};">Reset Your Password</h2>
     <p>You requested to reset your password for your CrystalCred admin account.</p>
     <p>Click the button below to proceed. This link is valid for 1 hour.</p>
@@ -102,11 +102,11 @@ export function resetPasswordEmail(resetUrl: string): string {
     <br>
     <p style="font-size: 14px; color: ${emailStyles.colors.muted};">If you didn't request a password reset, simple ignore this email.</p>
   `
-    return baseLayout("Reset Your Password - CrystalCred", content)
+  return baseLayout("Reset Your Password - CrystalCred", content)
 }
 
 export function magicLinkEmail(url: string, host: string): string {
-    const content = `
+  const content = `
     <h2 style="margin-top: 0; color: ${emailStyles.colors.primary};">Sign in to CrystalCred</h2>
     <p>Click the button below to sign in to the admin portal.</p>
     <div style="text-align: center; margin: 30px 0;">
@@ -117,5 +117,5 @@ export function magicLinkEmail(url: string, host: string): string {
     <br>
     <p style="font-size: 14px; color: ${emailStyles.colors.muted};">If you didn't request this email, you can safely ignore it.</p>
   `
-    return baseLayout(`Sign in to ${host}`, content)
+  return baseLayout(`Sign in to ${host}`, content)
 }

@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
         await user.save()
 
         // Create reset URL
-        // We use the origin from the request or fallback to localhost
-        const origin = request.nextUrl.origin
+        // We use the NEXT_PUBLIC_APP_URL from the environment or fallback to request origin
+        const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
         const resetUrl = `${origin}/admin/reset-password?token=${resetToken}`
 
         // Send email

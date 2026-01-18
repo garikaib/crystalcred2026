@@ -44,11 +44,11 @@ const mainNavItems = [
     },
 ]
 
-export function AdminSidebar() {
+export function SidebarContent() {
     const pathname = usePathname()
 
     return (
-        <aside className="hidden md:flex flex-col w-64 bg-slate-900 text-white min-h-screen border-r border-slate-800 shadow-xl">
+        <div className="flex flex-col h-full">
             <div className="p-6 border-b border-slate-800 bg-slate-950/50">
                 <Link href="/admin" className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center">
@@ -222,6 +222,14 @@ export function AdminSidebar() {
                     </Button>
                 </form>
             </div>
+        </div>
+    )
+}
+
+export function AdminSidebar() {
+    return (
+        <aside className="hidden md:flex flex-col w-64 bg-slate-900 text-white min-h-screen border-r border-slate-800 shadow-xl">
+            <SidebarContent />
         </aside>
     )
 }
