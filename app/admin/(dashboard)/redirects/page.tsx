@@ -56,15 +56,15 @@ import {
     Search,
 } from "lucide-react"
 import { format } from "date-fns"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 
 const formSchema = z.object({
     source: z.string().min(1, "Source is required").startsWith("/", "Must start with /"),
     destination: z.string().min(1, "Destination is required"),
     type: z.enum(["301", "302"]),
-    isActive: z.boolean().default(true),
-    ignoreQueryParams: z.boolean().default(true),
+    isActive: z.boolean(),
+    ignoreQueryParams: z.boolean(),
 })
 
 type Redirect = {

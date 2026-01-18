@@ -223,6 +223,7 @@ const extensions = [
             class: "rounded-lg border shadow-sm max-w-full h-auto my-4",
         },
     }),
+    /*
     Link.configure({
         openOnClick: false,
         autolink: true,
@@ -230,6 +231,7 @@ const extensions = [
             class: "text-primary underline underline-offset-4",
         },
     }),
+    */
 ];
 
 export default function RichTextEditor({ value, onChange, className }: RichTextEditorProps) {
@@ -244,6 +246,9 @@ export default function RichTextEditor({ value, onChange, className }: RichTextE
             handlePaste: (view, event, slice) => {
                 // Check if there's HTML content in the clipboard
                 const html = event.clipboardData?.getData("text/html");
+                const text = event.clipboardData?.getData("text/plain") || "";
+
+                console.log("Paste Debug:", { hasHtml: !!html, textSnippet: text.slice(0, 50) });
 
                 if (html) {
                     // If we have HTML, let TipTap parse and insert it
@@ -252,7 +257,6 @@ export default function RichTextEditor({ value, onChange, className }: RichTextE
                 }
 
                 // Check if the plain text looks like HTML (starts with < and contains >)
-                const text = event.clipboardData?.getData("text/plain") || "";
                 if (text.trim().startsWith("<") && text.includes(">")) {
                     // This is HTML pasted as plain text, we need to parse it
                     event.preventDefault();

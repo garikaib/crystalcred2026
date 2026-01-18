@@ -6,8 +6,9 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Loader2, Lock, Unlock, Settings2, Plus, FileText, Globe, ImageIcon, Eye } from "lucide-react"
-import dynamic from 'next/dynamic'
-// import 'react-quill-new/dist/quill.snow.css'
+import RichTextEditor from "@/components/editor/RichTextEditor"
+import { useToast } from "@/hooks/use-toast"
+import { logActivityAction } from "@/app/actions/log-activity"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -31,12 +32,6 @@ import {
 } from "@/components/ui/select"
 import { MediaManager } from "./MediaManager"
 import { CategoryManager } from "./CategoryManager"
-import RichTextEditor from "@/components/editor/RichTextEditor"
-import { useToast } from "@/hooks/use-toast"
-import { logActivityAction } from "@/app/actions/log-activity"
-
-// Dynamically import ReactQuill to avoid SSR issues
-// REMOVED: Quill import
 
 const formSchema = z.object({
     title: z.string().min(5, "Title must be at least 5 characters"),
@@ -294,9 +289,19 @@ export function BlogForm({ initialData, isEditing = false }: BlogFormProps) {
 
                         <div className="flex gap-2 w-full">
                             <Button type="button" variant="ghost" className="flex-1" onClick={() => router.back()}>Cancel</Button>
-                            <Button type="submit" disabled={isSubmitting} className="flex-1">
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                {isEditing ? "Update" : "Publish"}
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    isEditing ? "Update Post" : "Publish Post"
+                                )}
                             </Button>
                         </div>
 

@@ -8,6 +8,37 @@ import dbConnect from "@/lib/mongodb"
 import BlogPost from "@/models/BlogPost"
 import { Button } from "@/components/ui/button"
 import { CTASection } from "@/components/sections/CTASection"
+import { Metadata } from "next"
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { slug } = await params
+    const post = await getPost(slug)
+
+    if (!post) {
+        return {
+            title: "Post Not Found | CrystalCred",
+        }
+    }
+
+    return {
+        title: `${post.title} | CrystalCred Knowledge`,
+        description: post.excerpt || post.content.replace(/<[^>]*>/g, "").slice(0, 160) + "...",
+        openGraph: {
+            title: post.title,
+            description: post.excerpt || post.content.replace(/<[^>]*>/g, "").slice(0, 160) + "...",
+            images: post.featuredImage ? [post.featuredImage] : [],
+            type: "article",
+            publishedTime: post.createdAt,
+            authors: [post.author || "CrystalCred Team"],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: post.title,
+            description: post.excerpt || post.content.replace(/<[^>]*>/g, "").slice(0, 160) + "...",
+            images: post.featuredImage ? [post.featuredImage] : [],
+        },
+    }
+}
 
 export const revalidate = 3600
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Zap, Shield, ArrowRight, Loader2, AlertCircle, Mail, CheckCircle } from "lucide-react"
 import Script from "next/script"
 
-export default function LoginPage() {
+function LoginFormContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [username, setUsername] = useState("")
@@ -326,5 +326,17 @@ export default function LoginPage() {
                 </div>
             </div>
         </>
+    )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-slate-500" />
+            </div>
+        }>
+            <LoginFormContent />
+        </Suspense>
     )
 }

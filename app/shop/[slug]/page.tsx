@@ -8,6 +8,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CTASection } from "@/components/sections/CTASection"
 import dbConnect from "@/lib/mongodb"
 import { Product } from "@/models/Product"
+import { Metadata } from "next"
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { slug } = await params
+    const product = await getProductBySlug(slug)
+
+    if (!product) {
+        return {
+            title: "Product Not Found | CrystalCred",
+        }
+    }
+
+    return {
+        title: `${product.name} | CrystalCred Solar Shop`,
+        description: product.description.slice(0, 160) + "...",
+        openGraph: {
+            title: product.name,
+            description: product.description.slice(0, 160) + "...",
+            images: product.image ? [product.image] : [],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: product.name,
+            description: product.description.slice(0, 160) + "...",
+            images: product.image ? [product.image] : [],
+        },
+    }
+}
 
 interface PageProps {
     params: Promise<{ slug: string }>

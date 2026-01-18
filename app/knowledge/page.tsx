@@ -2,6 +2,12 @@ import dbConnect from "@/lib/mongodb"
 import BlogPost from "@/models/BlogPost"
 import { BlogCard } from "@/components/blog/BlogCard"
 import { CTASection } from "@/components/sections/CTASection"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+    title: "Knowledge Hub",
+    description: "Insights, guides, and news about solar energy and sustainable solutions in Zimbabwe. Empowering you with clean energy knowledge.",
+};
 
 // Revalidate every hour
 export const revalidate = 3600

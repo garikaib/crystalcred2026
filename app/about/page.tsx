@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button"
 import Page from "@/models/Page"
 import { notFound } from "next/navigation"
 import dbConnect from "@/lib/mongodb"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+    title: "About Us",
+    description: "Learn about CrystalCred's mission to bridge the gap to clean energy in Zimbabwe. Our story, values, and vision for a sustainable future.",
+};
 
 // Map icons to strings from JSON
 const iconMap: Record<string, any> = {

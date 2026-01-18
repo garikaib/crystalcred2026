@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(category);
     } catch (error) {
         if (error instanceof z.ZodError) {
-            return new NextResponse(error.errors[0].message, { status: 400 });
+            return new NextResponse(error.issues[0].message, { status: 400 });
         }
         console.error("[CATEGORIES_POST]", error);
         return new NextResponse("Internal Error", { status: 500 });

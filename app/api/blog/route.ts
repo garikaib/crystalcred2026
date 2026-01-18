@@ -29,15 +29,26 @@ export async function POST(req: NextRequest) {
     try {
         const data = await req.json()
         // Generate slug from title if not provided
-        if (!data.slug) {
-            data.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "")
+        let slug = data.slug;
+        if (!slug) {
+            slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
         }
+
+        // Ensure slug is unique by appending number if exists
+        let uniqueSlug = slug;
+        let counter = 1;
+        while (await BlogPost.findOne({ slug: uniqueSlug })) {
+            uniqueSlug = `${slug}-${counter}`;
+            counter++;
+        }
+        data.slug = uniqueSlug;
 
         data.author = session.user.name || "CrystalCred Admin"
 
         const post = await BlogPost.create(data)
         return NextResponse.json(post, { status: 201 })
-    } catch (error) {
-        return NextResponse.json({ error: "Failed to create post" }, { status: 500 })
+    } catch (error: any) {
+        console.error("Failed to create post:", error)
+        return NextResponse.json({ error: "Failed to create post", details: (error as Error).message }, { status: 500 })
     }
 }

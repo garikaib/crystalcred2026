@@ -1,6 +1,12 @@
 import Link from "next/link"
 import { CTASection } from "@/components/sections/CTASection"
 import { Zap, ShieldCheck, Ruler, Truck, ArrowRight, CheckCircle2, Phone } from "lucide-react"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+    title: "Our Services",
+    description: "Expert solar services in Zimbabwe, including site assessment, professional installation, product supply, and ongoing maintenance.",
+};
 
 const services = [
     {

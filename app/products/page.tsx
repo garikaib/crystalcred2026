@@ -2,6 +2,12 @@ import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, Battery, Zap, Sun, Box, Sparkles, Shield, Clock } from "lucide-react"
 import { CTASection } from "@/components/sections/CTASection"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+    title: "Our Products",
+    description: "Explore our range of premium solar solutions in Zimbabwe, including solar packages, inverters, batteries, and panels from top brands.",
+};
 
 const categories = [
     {

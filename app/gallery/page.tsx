@@ -1,5 +1,11 @@
 import { GalleryGrid } from "@/components/gallery/GalleryGrid"
 import { CTASection } from "@/components/sections/CTASection"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+    title: "Portfolio",
+    description: "View our portfolio of residential and commercial solar installations across Zimbabwe. Real projects, real impact.",
+};
 
 export default function GalleryPage() {
     return (
