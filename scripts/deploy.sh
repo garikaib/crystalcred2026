@@ -16,48 +16,18 @@ fi
 
 echo "🚀 Deploying to $REMOTE_USER@$REMOTE_HOST"
 
-# 1. Build Locally
-# 1. Build Locally
+# 1. Build Locally (Disabled - building on remote for Turbopack consistency)
 if [ "$SKIP_BUILD" = false ]; then
-    echo "📦 Building locally..."
-    
-    # Temporarily move .env.local so next build picks up .env.production
-    if [ -f .env.local ]; then
-        echo "🔄 Swapping environment files for production build..."
-        mv .env.local .env.local.backup
-    fi
-    
-    # Ensure cleanup happens even if build fails
-    trap 'if [ -f .env.local.backup ]; then mv .env.local.backup .env.local; echo "🔄 Restored .env.local"; fi' EXIT
-
-    rm -rf .next
-    npm run build
-    
-    # Restore .env.local immediately after build
-    if [ -f .env.local.backup ]; then
-        mv .env.local.backup .env.local
-        echo "🔄 Restored .env.local"
-    fi
-    
-    # Remove trap as we handled it
-    trap - EXIT
-    
-    if [ $? -ne 0 ]; then
-        echo "❌ Build failed. Aborting deployment."
-        exit 1
-    fi
+    echo "⏭️ Local build skipped (source will be built on remote server)"
 else
     echo "⏭️ Skipping build as requested."
 fi
 
-# 2. Create Archive
-echo "📚 Creating archive..."
-tar --exclude='node_modules' --exclude='.git' --exclude='.next/cache' --exclude='.next/dev' -cf - \
-    .next \
-    public \
-    package.json \
-    next.config.mjs \
-    ecosystem.config.js \
+# 2. Create Archive (Source Only)
+echo "📚 Creating archive of source files..."
+# Exclude node_modules, .git, .next, and other build artifacts
+rm -f $ARCHIVE_NAME
+tar --exclude='node_modules' --exclude='.git' --exclude='.next' --exclude='deploy.tar.zst' -cf - . \
     | zstd - -3 -o $ARCHIVE_NAME
 
 # Show archive size
@@ -82,12 +52,8 @@ ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" << EOF
     sudo mkdir -p $REMOTE_DIR
     sudo chown $REMOTE_USER:$REMOTE_USER $REMOTE_DIR
 
-    # Clean remote cache (Nuke it)
-    echo "🧹 Cleaning remote cache..."
-    sudo rm -rf $REMOTE_DIR/.next
-
     # Unpack archive
-    echo "📦 Unpacking archive..."
+    echo "📦 Unpacking source archive..."
     sudo tar -I zstd -xf ~/$ARCHIVE_NAME -C $REMOTE_DIR
     
     # Move environment file
@@ -102,9 +68,18 @@ ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" << EOF
     # Fix ownership
     sudo chown -R $REMOTE_USER:$REMOTE_USER .
 
-    # Install dependencies
-    echo "📥 Installing dependencies..."
-    npm install --omit=dev --ignore-scripts
+    # Install dependencies (Full Install required for build)
+    echo "📥 Installing dependencies (npm ci)..."
+    sudo rm -rf node_modules
+    npm ci --ignore-scripts
+    
+    # Stop PM2 to free memory for build
+    echo "🛑 Stopping PM2 to free RAM for build..."
+    pm2 stop all || true
+    
+    # Build on Server
+    echo "📦 Building on server (Turbopack)..."
+    npm run build
     
     # Flush Nginx cache
     echo "🧹 Flushing Nginx cache..."
@@ -112,8 +87,8 @@ ssh $SSH_OPTS "$REMOTE_USER@$REMOTE_HOST" << EOF
     sudo systemctl reload nginx
     
     # Restart PM2
-    echo "🔄 Restarting Service..."
-    pm2 reload crystalcred || pm2 start ecosystem.config.js --env production
+    echo "🔄 Starting Service..."
+    pm2 start ecosystem.config.js --env production
     
     # Save PM2 list
     pm2 save
