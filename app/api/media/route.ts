@@ -1,127 +1,127 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, unlink } from "fs/promises";
+import { writeFile, unlink, mkdir, chmod } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import { Media } from "@/models/Media";
 
-// Ensure uploads directory exists (done in previous steps, but good practice to check logic if needed, skipping for now as we did mkdir)
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+    let mediaId = null;
     try {
         const session = await auth();
-        console.log("Media API POST - Session:", session?.user?.email);
-
         if (!session || session.user?.role !== "admin") {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        console.log("Media API POST - Connecting to DB...");
         await dbConnect();
 
         const formData = await req.formData();
         const file = formData.get("file") as File;
 
         if (!file) {
-            console.log("Media API POST - No file in formData");
             return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
         }
 
-        console.log("Media API POST - File received:", file.name, file.type, file.size);
-
         const buffer = Buffer.from(await file.arrayBuffer());
         const originalName = file.name.replace(/\.[^/.]+$/, "").replace(/\s+/g, "-").toLowerCase();
-        const uploadDir = path.join(process.cwd(), "public", "uploads");
 
-        console.log("Media API POST - Upload directory:", uploadDir);
-
-        const timestamp = Date.now();
-        const baseFilename = `${timestamp}-${originalName}`;
-
-        // Versions configuration
-        // WebP for all versions
+        // Initial Metadata Check
         const metadata = await sharp(buffer).metadata();
-        console.log("Media API POST - Image metadata:", metadata.width, "x", metadata.height);
-
         const originalWidth = metadata.width || 0;
         const originalHeight = metadata.height || 0;
 
+        // 1. Create DB Entry (Status: PROCESSING)
+        const timestamp = Date.now();
+        const baseFilename = `${timestamp}-${originalName}`;
+        const originalFilename = `${baseFilename}.webp`; // We always convert to WebP
+
+        const mediaEntry = await Media.create({
+            filename: originalFilename,
+            url: `/uploads/${originalFilename}`,
+            altText: originalName,
+            title: originalName,
+            width: originalWidth,
+            height: originalHeight,
+            size: buffer.length,
+            mimeType: "image/webp",
+            status: 'processing', // Start as processing
+            versions: {}
+        });
+        mediaId = mediaEntry._id;
+        console.log(`Media Upload Started: ${mediaId} (${originalName})`);
+
+        // 2. Process Files (Async but we await it for simplicity in this implementation)
+        // In a larger app, this would be a background job
+        const uploadDir = path.join(process.cwd(), "public", "uploads");
+        await mkdir(uploadDir, { recursive: true });
+
+        // Process Original
+        const originalPath = path.join(uploadDir, originalFilename);
+        await sharp(buffer)
+            .webp({ quality: 90 })
+            .toFile(originalPath);
+        await chmod(originalPath, 0o644);
+
+        // Process Variations
         const versions = {
-            original: { width: originalWidth, height: originalHeight, suffix: '' },
             large: { width: 1200, height: null, suffix: '-large' },
             medium: { width: 800, height: null, suffix: '-medium' },
-            thumbnail: { width: 150, height: 150, suffix: '-thumb' } // Square crop
+            thumbnail: { width: 150, height: 150, suffix: '-thumb' }
         };
 
         const savedVersions: any = {};
 
-        // Process Original (Convert to WebP)
-        const originalFilename = `${baseFilename}.webp`;
-        console.log("Media API POST - Processing original...");
-        await sharp(buffer)
-            .webp({ quality: 90 })
-            .toFile(path.join(uploadDir, originalFilename));
-
-        // Use the metadata we already calculated instead of re-reading from disk
-        const originalStats = metadata;
-
-        // Process Variations
         for (const [key, config] of Object.entries(versions)) {
-            if (key === 'original') continue;
-
             const versionFilename = `${baseFilename}${config.suffix}.webp`;
             const filepath = path.join(uploadDir, versionFilename);
 
-            console.log(`Media API POST - Processing ${key}...`);
             let pipeline = sharp(buffer).webp({ quality: 80 });
 
             if (config.width) {
                 if (config.height) {
-                    // Crop for thumbnail
                     pipeline = pipeline.resize(config.width, config.height, { fit: 'cover' });
-                } else {
-                    // Resize width, auto height
-                    if (originalWidth > config.width) {
-                        pipeline = pipeline.resize(config.width, null, { withoutEnlargement: true });
-                    }
+                } else if (originalWidth > config.width) {
+                    pipeline = pipeline.resize(config.width, null, { withoutEnlargement: true });
                 }
             }
 
             await pipeline.toFile(filepath);
+            await chmod(filepath, 0o644);
             const stats = await sharp(filepath).metadata();
 
-            if (key !== 'original') {
-                savedVersions[key] = {
-                    url: `/uploads/${versionFilename}`,
-                    width: stats.width,
-                    height: stats.height
-                };
-            }
+            savedVersions[key] = {
+                url: `/uploads/${versionFilename}`,
+                width: stats.width,
+                height: stats.height
+            };
         }
 
-        console.log("Media API POST - Saving to DB...");
-        const mediaEntry = await Media.create({
-            filename: originalFilename,
-            url: `/uploads/${originalFilename}`,
-            altText: originalName, // Default alt text
-            title: originalName,
-            width: originalStats.width,
-            height: originalStats.height,
-            size: buffer.length, // Use buffer length for accurate file size
-            mimeType: "image/webp",
+        // 3. Update DB to READY
+        const readyMedia = await Media.findByIdAndUpdate(mediaId, {
+            status: 'ready',
             versions: savedVersions
-        });
+        }, { new: true });
 
-        console.log("Media API POST - Success:", mediaEntry._id);
-        return NextResponse.json(mediaEntry);
+        console.log(`Media Upload Complete: ${mediaId}`);
+        return NextResponse.json(readyMedia);
 
     } catch (error: any) {
-        console.error("Upload error (DETAILED):", error);
+        console.error("Upload error:", error);
+
+        // 4. Update DB to ERROR if we created an entry
+        if (mediaId) {
+            await Media.findByIdAndUpdate(mediaId, {
+                status: 'error',
+                error: error.message || "Processing failed"
+            });
+        }
+
         return NextResponse.json({
             error: "Upload failed",
-            details: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            details: error.message
         }, { status: 500 });
     }
 }
