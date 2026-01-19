@@ -45,7 +45,7 @@ export function ProductCard({ _id, name, slug, category, price, image, descripti
             </CardHeader>
             <CardContent className="p-4 pt-0 flex-grow">
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{description}</p>
-                <p className="font-semibold text-primary">{price}</p>
+                <p className="font-semibold text-emerald-700">{price}</p>
             </CardContent>
             <CardFooter className="p-4 pt-0">
                 <Button className="w-full" variant="outline" asChild>

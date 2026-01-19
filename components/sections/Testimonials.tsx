@@ -72,7 +72,7 @@ export function Testimonials() {
                                                     <Star key={i} size={18} fill="currentColor" />
                                                 ))}
                                             </div>
-                                            <blockquote className="text-lg leading-relaxed italic text-muted-foreground">
+                                            <blockquote className="text-lg leading-relaxed italic text-foreground/80">
                                                 "{t.content}"
                                             </blockquote>
                                             <div className="mt-auto pt-4 flex items-center gap-3">

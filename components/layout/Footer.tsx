@@ -52,7 +52,7 @@ export function Footer() {
                     {/* Brand Info */}
                     <div>
                         <h3 className="text-xl font-bold mb-4">CrystalCred</h3>
-                        <p className="text-white/80 mb-6 text-sm leading-relaxed">
+                        <p className="text-white/90 mb-6 text-sm leading-relaxed">
                             Bridging the gap to clean energy. We provide premium solar solutions for homes and businesses across Zimbabwe.
                         </p>
                         <div className="flex gap-4">
@@ -87,7 +87,7 @@ export function Footer() {
                     {/* Quick Links */}
                     <div>
                         <h4 className="font-semibold mb-4 text-lg">Quick Links</h4>
-                        <ul className="space-y-2 text-sm text-white/80">
+                        <ul className="space-y-2 text-sm text-white/90">
                             <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
                             <li><Link href="/products" className="hover:text-white transition-colors">Products</Link></li>
                             <li><Link href="/services" className="hover:text-white transition-colors">Services</Link></li>
@@ -99,7 +99,7 @@ export function Footer() {
                     {/* Products */}
                     <div>
                         <h4 className="font-semibold mb-4 text-lg">Products</h4>
-                        <ul className="space-y-2 text-sm text-white/80">
+                        <ul className="space-y-2 text-sm text-white/90">
                             <li><Link href="/products/solar-packages" className="hover:text-white transition-colors">Solar Packages</Link></li>
                             <li><Link href="/products/inverters" className="hover:text-white transition-colors">Inverters</Link></li>
                             <li><Link href="/products/batteries" className="hover:text-white transition-colors">Batteries</Link></li>
@@ -110,7 +110,7 @@ export function Footer() {
                     {/* Contact Info */}
                     <div>
                         <h4 className="font-semibold mb-4 text-lg">Contact Us</h4>
-                        <ul className="space-y-4 text-sm text-white/80">
+                        <ul className="space-y-4 text-sm text-white/90">
                             <li className="flex gap-3 items-start">
                                 <MapPin size={18} className="shrink-0 mt-0.5" />
                                 <span>{settings?.contact?.address || "Loading..."}</span>

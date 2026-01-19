@@ -95,7 +95,7 @@ export function FeaturedProducts() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-4 pt-0">
-                                <p className="font-semibold text-ring">{product.price}</p>
+                                <p className="font-semibold text-emerald-700">{product.price}</p>
                             </CardContent>
                             <CardFooter className="p-4 pt-0">
                                 <Button className="w-full bg-secondary text-primary hover:bg-primary hover:text-white" asChild>
