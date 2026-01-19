@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AdminAwareLayout } from "@/components/layout/AdminAwareLayout";
-import { GoogleAnalytics } from '@next/third-parties/google';
-import { LocalTracker } from "@/components/analytics/LocalTracker";
+import { AnalyticsWrapper } from "@/components/analytics/AnalyticsWrapper";
 import { Suspense } from "react";
 
 const inter = Inter({
@@ -77,11 +76,8 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground min-h-screen flex flex-col`} suppressHydrationWarning>
         <AdminAwareLayout>
           {children}
+          <AnalyticsWrapper />
         </AdminAwareLayout>
-        <GoogleAnalytics gaId="G-3XHN675BGF" />
-        <Suspense fallback={null}>
-          <LocalTracker />
-        </Suspense>
       </body>
     </html>
   );

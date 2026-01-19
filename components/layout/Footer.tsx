@@ -57,27 +57,27 @@ export function Footer() {
                         </p>
                         <div className="flex gap-4">
                             {settings?.socials?.facebook && (
-                                <a href={settings.socials.facebook} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors">
+                                <a href={settings.socials.facebook} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors" aria-label="Visit our Facebook page">
                                     <Facebook size={20} />
                                 </a>
                             )}
                             {settings?.socials?.twitter && (
-                                <a href={settings.socials.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors">
+                                <a href={settings.socials.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors" aria-label="Visit our Twitter profile">
                                     <Twitter size={20} />
                                 </a>
                             )}
                             {settings?.socials?.instagram && (
-                                <a href={settings.socials.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors">
+                                <a href={settings.socials.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors" aria-label="Visit our Instagram profile">
                                     <Instagram size={20} />
                                 </a>
                             )}
                             {settings?.socials?.linkedin && (
-                                <a href={settings.socials.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors">
+                                <a href={settings.socials.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors" aria-label="Visit our LinkedIn profile">
                                     <Linkedin size={20} />
                                 </a>
                             )}
                             {settings?.socials?.youtube && (
-                                <a href={settings.socials.youtube} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors">
+                                <a href={settings.socials.youtube} target="_blank" rel="noopener noreferrer" className="hover:text-ring transition-colors" aria-label="Visit our YouTube channel">
                                     <Youtube size={20} />
                                 </a>
                             )}
@@ -126,7 +126,7 @@ export function Footer() {
                             {settings?.contact?.whatsapp && (
                                 <li className="flex gap-3 items-center text-ring font-medium">
                                     <MessageCircle size={18} className="shrink-0" />
-                                    <a href={settings.contact.whatsapp} target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+                                    <a href={settings.contact.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp">Chat on WhatsApp</a>
                                 </li>
                             )}
                         </ul>

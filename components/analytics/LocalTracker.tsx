@@ -3,10 +3,12 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useReportWebVitals } from "next/web-vitals";
+import { useSession } from "next-auth/react";
 
 export function LocalTracker() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const { status } = useSession();
     const lastUrl = useRef<string | null>(null);
 
     // Track Page Views
@@ -14,7 +16,6 @@ export function LocalTracker() {
         const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : "");
 
         // Prevent duplicate tracking on initial load if React 18 fires twice in dev
-        // In prod this is fine, but good practice to check logic
         if (lastUrl.current === url) return;
         lastUrl.current = url;
 
@@ -26,7 +27,7 @@ export function LocalTracker() {
                 eventType: "pageview",
                 url
             }),
-            keepalive: true, // Ensure request completes even if page unloads
+            keepalive: true,
         }).catch(err => console.error("Tracking Error", err));
 
     }, [pathname, searchParams]);
